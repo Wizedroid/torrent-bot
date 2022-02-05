@@ -1,48 +1,52 @@
 import argparse
+import logging
 from pathlib import Path
 from utils import config
-from jackett import JacketClient
-from qbittorrent import QbittorrentClient
+from jackett.client import JacketClient
+from qbittorrent.client import QbittorrentClient
+from bots.movies_bot import MoviesBot
 
-DEFAULT_CONFIG_PATH=f"{Path.home()}/config.yaml"
+DEFAULT_ROOT_PATH = f"{Path.home()}/.tbot"
+DEFAULT_CONFIG_PATH = f"{DEFAULT_ROOT_PATH}/config.yaml"
 
-parser = argparse.ArgumentParser()
-parser.add_argument("-c", "--config", help="Specify a different config file path.", default=DEFAULT_CONFIG_PATH)
-args = parser.parse_args()
+logging.basicConfig(level=logging.DEBUG)
 
-config_path = args.config
-cfg = config.load_config(config_path)
-print(cfg)
+def main():
+    logging.debug("Starting Torrent Bot.")
 
+    # Parse arguments and load configurations from a yaml configuration file
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "-c",
+        "--config",
+        help="Specify a different config file path.",
+        default=DEFAULT_CONFIG_PATH,
+    )
+    args = parser.parse_args()
 
-# Initialization
-jacket_api_key = cfg['jacket']['api_key']
-jacket = JacketClient(jacket_api_key)
+    config_path = args.config
+    config.load_config(config_path)
 
-qbittorrent_url = cfg['qbittorrent']['url']
-qbittorrent = QbittorrentClient(cfg['qbittorrent']['qbittorrent_url'])
+    # Initialize clients and bots
+    jacket = JacketClient(config.jackett.api_key, config.jackett.api_url)
+    qbittorrent = QbittorrentClient(config.qbit.hostname, config.qbit.port)
+    movies_bot = MoviesBot(jacket, qbittorrent)
+    #tvseries_bot = TvSeriesBot(jacket, qbittorrent)
 
-# Movies Download
-movies = cfg['movies']
+    # Initialize bot download sequences
+    logging.info("Initializing download.")
+    movies_bot.start_download(config.movies.directory, config.movies.list) # @TODO change movies to DB
+    #tvseries_bot.start_download(config.series.directory, config.series.list) # @TODO change series to DB
 
-for movie in movies:
-    name = movie.get('name')
-    max_size = movie.get("max_size", None)
-    year = movie.get("year", None)
-    res = movie.get("max_size", ['720p', '1080p'])
-    lang = movie.get("lang", None)
-    destination_dir = movie.get("dir")
-    link = jacket.find_movie(name, max_size, year, res, lang)
-    qbittorrent.download(link, destination_dir)
+    # Initialize bot cleanup sequences
+    logging.info(f"Removing torrents older than {config.movies.rentention_period_sec}")
+    movies_bot.cleanup(config.movies.rentention_period_sec)
+    #tvseries_bot.cleanup(config.movies.rentention)
 
+    # Shutdown bots
+    logging.info(f"Shuting down..")
+    movies_bot.shutdown()
+    #tvseries_bot.shutdown()
 
-# Series Download
-# @TODO
-
-# Others
-# @TODO
-
-# Clear Seeding
-# @TODO
-
-# Remove movies not in the list
+if __name__ == '__main__':
+    main()

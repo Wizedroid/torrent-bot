@@ -13,3 +13,10 @@
 | res       | Resolution                  | Array   | no       | ["720p", "1080p"] |
 | lang      | Movie Language              | String  | no       | None              |
 | dir       | Destination directory       | String  | yes      | None              |
+
+# Quality profiles: https://olhardigital.com.br/2017/07/20/games-e-consoles/web-dl-bdrip-dvdrip-entenda-os-termos-que-identificam-torrents-de-videos/
+
+
+@TODO
+
+document resolution profile
