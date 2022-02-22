@@ -1,5 +1,14 @@
-jacket:
-  api-key: ""
+jackett:
+  api_key: "<secret>"
+  api_url: "http://127.0.0.1:9117/api/v2.0"
+
+qbittorrent:
+  hostname: "127.0.0.1"
+  port: 8080
 
 movies:
-  directory: ""
+  directory: "<dir>"
+  rentention_period_sec: 300
+
+frontend:
+  secret_key: "<secret>"
