@@ -5,7 +5,7 @@ from utils import config
 from tools import JackettClient
 from tools import QbittorrentClient
 from data import TBDatabase
-from tasks import MovieFinder
+from tasks import MovieProbe
 from visuals import Visuals
 
 ROOT_PATH = f"{Path.home()}/.tbot"
@@ -30,9 +30,8 @@ def main():
     logging.info("Starting Torrent Bot.")
     tbot = TBot()
     tbot.run()
-    
-class TBot:
 
+class TBot:
     def __init__(self) -> None:
         # Initialize the database
         logging.info("Initializing data")
@@ -44,33 +43,32 @@ class TBot:
         visuals.start()
         # Initialize tasks @TODO (naming)
         logging.info("Initializing tasks")
-        jacket = JackettClient(config.jackett.api_key, config.jackett.api_url)
-        qbittorrent = QbittorrentClient(config.qbit.hostname, config.qbit.port)
-        self.movies_bot = MovieFinder(jacket, qbittorrent, TBDatabase(DB_PATH))
+        self.movies_probe = MovieProbe(
+            config.jackett.api_key,
+            config.jackett.api_url,
+            config.qbit.hostname,
+            config.qbit.port,
+            DB_PATH,
+            config.movies.directory,
+            config.movies.rentention_period_sec,
+        )
         # tvseries_bot = TvSeriesBot(jacket, qbittorrent)
         self.running = True
 
-
     def run(self) -> None:
         while self.running:
-            # Initialize bot download sequences
-            logging.info("Started download task..")
-            self.movies_bot.start_download(
-                config.movies.directory
-            )  # @TODO change movies to DB
-            # tvseries_bot.start_download(config.series.directory, config.series.list) # @TODO change series to DB
+            # Start tasks
+            logging.info("Starting tasks..")
+            self.movies_probe.probe()
+            self.movies_probe.update()
 
-            # Initialize bot cleanup sequences
-            logging.info(f"Removing torrents older than {config.movies.rentention_period_sec}")
-            self.movies_bot.cleanup(config.movies.rentention_period_sec)
-            # tvseries_bot.cleanup(config.movies.rentention)
-
+            logging.info("Finished tasks..")
             logging.info(f"Going to sleep...")
-            time.sleep(60)
+            time.sleep(5)
 
         # Shutdown bots
         logging.info(f"Shuting down..")
-        self.movies_bot.shutdown()
+        self.movies_probe.shutdown()
         # tvseries_bot.shutdown()
 
 

@@ -1,3 +1,4 @@
+from collections import namedtuple
 import sqlite3
 
 
@@ -15,11 +16,13 @@ class TBDatabase:
     def __init__(self, db_file_path: str) -> None:
         self.db_file_path = db_file_path
         self.connection = sqlite3.connect(self.db_file_path)
-        self.SEARCHING = "SEARCHING"
-        self.DOWNLOADING = "DOWNLOADING"
-        self.SEEDING = "SEEDING"
-        self.COMPLETED = "COMPLETED"
-        self.states = [self.SEARCHING, self.DOWNLOADING, self.SEEDING, self.COMPLETED]
+        self.states = {
+            "searching": "SEARCHING",
+            "downloading": "DOWNLOADING",
+            "seeding": "SEEDING",
+            "completed": "COMPLETED",
+            "deleted": "DELETED",
+        } # @TODO change to doted notation
 
     def create_schema(self) -> None:
         """Initializes the database by creating the necessary schema.
@@ -35,7 +38,8 @@ class TBDatabase:
             "name" TEXT UNIQUE NOT NULL,
             "max_size_mb" INTEGER NOT NULL,
             "resolutions"	TEXT NOT NULL,
-            "state" TEXT NOT NULL DEFAULT '{self.SEARCHING}')
+            "state" TEXT NOT NULL DEFAULT '{self.states["searching"]}',
+            "hash" TEXT)
         """
         cur.execute(sql)
 
@@ -48,7 +52,7 @@ class TBDatabase:
         Returns:
             list: the list of movies
         """
-        if state not in self.states:
+        if state not in self.states.values():
             raise Exception(f"Non allowed state={state}!")
         self.connection.row_factory = dict_factory
         cur = self.connection.cursor()
@@ -66,23 +70,37 @@ class TBDatabase:
         cur.execute("SELECT * FROM movies")
         return cur.fetchall()
 
-    def update_movie(
-        self, id: str, name: str, max_size_mb: int, resolutions: str, state: str
-    ) -> None:
-        """Updates a movie entry in the database with the specified id
+    def update_movie(self, id: str, **kwargs: dict) -> None:
+        """[summary]
 
         Args:
-            id (str): the movie identifier
-            name (str): the movie name
-            max_size_mb (int): the movie max size
-            resolutions (str): the resolution profile
-            state (str): the movie state
+            id (str): The movie identifier
+
+        Raises:
+            Exception: if the kwargs is empty or none or if the key arguments don't correspond to
+            a database column
         """
+        movie_table_columns = ["name", "max_size_mb", "resolutions", "state", "hash"]
         self.connection.row_factory = dict_factory
         cur = self.connection.cursor()
+        columns_to_update = ""
+        values = ()
+        if not kwargs:
+            raise Exception("At least one argument must be specified")
+
+        for key, value in kwargs.items():
+            if key not in movie_table_columns:
+                raise Exception(
+                    f"The key argument must be one of the following: {movie_table_columns}"
+                )
+            columns_to_update += f"{key}=?, "
+            values += (value,)
+        values += (id,)
+        columns_to_update = columns_to_update[:-2]
+
         cur.execute(
-            "UPDATE movies SET name=?, max_size_mb=?, resolutions=?, state=? WHERE id=?",
-            (name, max_size_mb, resolutions, state, id),
+            f"UPDATE movies SET {columns_to_update} WHERE id=?",
+            values,
         )
         self.connection.commit()
 

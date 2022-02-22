@@ -31,18 +31,20 @@ class QbittorrentClient:
         self.qbt_client.torrents_add(
             urls=magnetic_uri, save_path=save_path, is_paused=is_paused
         )
+    
 
-    def torrents_info(self, status_filter: str = "completed") -> list:
+    def torrents_info(self, status_filter: str = "completed", hashes: str = None) -> list:
         """Get the list of torrents in QBittorrent
 
         Args:
             status_filter (str, optional): The torrent status (downloading, completed, paused, 
             active, inactive, resumed stalled, stalled_uploading and stalled_downloading). 
-            Defaults to "completed".
+            Defaults to "completed". Set None to search for all.
+            hashes(str, optional): The torret hashes to look for. Defaults to None (all)
         Returns:
             list: a list of torrents
         """
-        return self.qbt_client.torrents_info(status_filter=status_filter)
+        return self.qbt_client.torrents_info(status_filter=status_filter, torrent_hashes=hashes)
 
     def delete(self, torrent_hashes: list) -> None:
         """Deletes the torrents given by the hash list
