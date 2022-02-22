@@ -3,7 +3,7 @@ import requests
 import json
 import re
 
-class JacketClient:
+class JackettClient:
     """
     A wrapper client for jackett api cals
 
@@ -69,7 +69,7 @@ class JacketClient:
     def search_tvseries(
         self,
         name: str,
-        resolution_profile: list,
+        resolution_profile: set,
         season: int,
         max_size_bytes: int = None,
         lang: str = None,
@@ -79,7 +79,7 @@ class JacketClient:
 
         Args:
             name (str): The name of the TV Series
-            resolution_profile (list): The resolution profile, check the docs for details
+            resolution_profile (set): The resolution profile, check the docs for details
             season (int): The season
             max_size_bytes (int, optional): the maximum size of the TV Series in bytes
             lang (str, optional): The desired language

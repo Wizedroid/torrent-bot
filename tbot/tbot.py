@@ -1,52 +1,78 @@
-import argparse
 import logging
+import time
 from pathlib import Path
 from utils import config
-from jackett.client import JacketClient
-from qbittorrent.client import QbittorrentClient
-from bots.movies_bot import MoviesBot
+from tools import JackettClient
+from tools import QbittorrentClient
+from data import TBDatabase
+from tasks import MovieFinder
+from visuals import Visuals
 
-DEFAULT_ROOT_PATH = f"{Path.home()}/.tbot"
-DEFAULT_CONFIG_PATH = f"{DEFAULT_ROOT_PATH}/config.yaml"
+ROOT_PATH = f"{Path.home()}/.tbot"
+CONFIG_PATH = f"{ROOT_PATH}/config.yaml"
+DB_PATH = f"{ROOT_PATH}/tbot.db"
+RES_PROFILES = {
+    "1080p+bluray",
+    "1080p+webrip",
+    "1080p+web-dl",
+    "720p+bluray",
+    "720p+webrip",
+    "720p+web-dl",
+}
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
+
 
 def main():
-    logging.debug("Starting Torrent Bot.")
+    # Load configs
+    config.load_config(CONFIG_PATH)
+    # Initialize the TBot
+    logging.info("Starting Torrent Bot.")
+    tbot = TBot()
+    tbot.run()
+    
+class TBot:
 
-    # Parse arguments and load configurations from a yaml configuration file
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "-c",
-        "--config",
-        help="Specify a different config file path.",
-        default=DEFAULT_CONFIG_PATH,
-    )
-    args = parser.parse_args()
+    def __init__(self) -> None:
+        # Initialize the database
+        logging.info("Initializing data")
+        db = TBDatabase(DB_PATH)
+        db.create_schema()
+        # Initialize the frontend
+        logging.info("Initializing visuals")
+        visuals = Visuals(DB_PATH, config.frontend.secret_key, RES_PROFILES)
+        visuals.start()
+        # Initialize tasks @TODO (naming)
+        logging.info("Initializing tasks")
+        jacket = JackettClient(config.jackett.api_key, config.jackett.api_url)
+        qbittorrent = QbittorrentClient(config.qbit.hostname, config.qbit.port)
+        self.movies_bot = MovieFinder(jacket, qbittorrent, TBDatabase(DB_PATH))
+        # tvseries_bot = TvSeriesBot(jacket, qbittorrent)
+        self.running = True
 
-    config_path = args.config
-    config.load_config(config_path)
 
-    # Initialize clients and bots
-    jacket = JacketClient(config.jackett.api_key, config.jackett.api_url)
-    qbittorrent = QbittorrentClient(config.qbit.hostname, config.qbit.port)
-    movies_bot = MoviesBot(jacket, qbittorrent)
-    #tvseries_bot = TvSeriesBot(jacket, qbittorrent)
+    def run(self) -> None:
+        while self.running:
+            # Initialize bot download sequences
+            logging.info("Started download task..")
+            self.movies_bot.start_download(
+                config.movies.directory
+            )  # @TODO change movies to DB
+            # tvseries_bot.start_download(config.series.directory, config.series.list) # @TODO change series to DB
 
-    # Initialize bot download sequences
-    logging.info("Initializing download.")
-    movies_bot.start_download(config.movies.directory, config.movies.list) # @TODO change movies to DB
-    #tvseries_bot.start_download(config.series.directory, config.series.list) # @TODO change series to DB
+            # Initialize bot cleanup sequences
+            logging.info(f"Removing torrents older than {config.movies.rentention_period_sec}")
+            self.movies_bot.cleanup(config.movies.rentention_period_sec)
+            # tvseries_bot.cleanup(config.movies.rentention)
 
-    # Initialize bot cleanup sequences
-    logging.info(f"Removing torrents older than {config.movies.rentention_period_sec}")
-    movies_bot.cleanup(config.movies.rentention_period_sec)
-    #tvseries_bot.cleanup(config.movies.rentention)
+            logging.info(f"Going to sleep...")
+            time.sleep(60)
 
-    # Shutdown bots
-    logging.info(f"Shuting down..")
-    movies_bot.shutdown()
-    #tvseries_bot.shutdown()
+        # Shutdown bots
+        logging.info(f"Shuting down..")
+        self.movies_bot.shutdown()
+        # tvseries_bot.shutdown()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()
