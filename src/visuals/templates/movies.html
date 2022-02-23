@@ -10,6 +10,7 @@
       <th>Resolutions</th>
       <th>State</th>
       <th>+Edit</th>
+      <th>-Delete</th>
     </thead>
     <tbody>
       {% for movie in g.movies %}
@@ -20,6 +21,10 @@
           <td>{{movie.resolutions}}</td>
           <td>{{movie.state}}</td>
           <td><a href='{{url_for("edit_movie",id=movie.id)}}' class='btn btn-primary'>Edit</a></td>
+          <td><form action="{{ url_for('delete_movie', id=movie.id) }}" method="post">
+            <input class="btn btn-danger" type="submit" value="Delete" onclick="return confirm('Are you sure?');">
+          </form></td>
+          </td>
         </tr>
       {%endfor%}
     </tbody>

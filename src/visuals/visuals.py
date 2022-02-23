@@ -35,6 +35,9 @@ class Visuals:
         self.app.add_url_rule(
             "/add_movie", "add_movie", self.add_movie, methods=["POST", "GET"]
         )
+        self.app.add_url_rule(
+            "/delete_movie/<string:id>", "delete_movie", self.delete_movie, methods=["POST", "DELETE"]
+        )
         self.resolution_profiles = resolution_profiles
     
     def start(self) -> None:
@@ -84,10 +87,11 @@ class Visuals:
                 UPDATE movies 
                 SET name=?,
                 max_size_mb=?,
-                resolutions=?
+                resolutions=?,
+                state=?
                 WHERE id=?
                 """,
-                    (name, max_size_mb, resolutions, id),
+                    (name, max_size_mb, resolutions, 'SEARCHING', id),
                 )
                 db.commit()
                 flash("Movie Updated", "success")
@@ -98,6 +102,22 @@ class Visuals:
         g.resolutions = data["resolutions"]
         g.resolution_options = self.resolution_profiles
         return render_template("edit_movie.html")
+    
+    def delete_movie(self, id: str) -> str:
+        """Deletes a movie
+
+        Args:
+            id (str): the id of the movie to delete
+
+        Returns:
+            str: movies template page
+        """
+        db = self.get_db()
+        db.execute("DELETE FROM movies WHERE id=?", (id,))
+        flash("Movie Deleted", "success")
+        db.commit()
+        return redirect(url_for("movies"))
+
 
     def add_movie(self) -> str:
         """Add movie endpoint
@@ -133,7 +153,7 @@ class Visuals:
         Returns:
             [type]: [description]
         """
-        if "db" not in g:
+        if "db" not in g: # @TODO use the database class
             g.db = sqlite3.connect(
                 current_app.config["DB"], detect_types=sqlite3.PARSE_DECLTYPES
             )
