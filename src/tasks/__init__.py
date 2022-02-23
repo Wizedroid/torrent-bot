@@ -1,1 +1,1 @@
-from .movie_probe import MovieProbe
+from .movie_finder import MovieFinder
