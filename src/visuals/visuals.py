@@ -1,10 +1,14 @@
+from audioop import maxpp
 from re import S
 from sqlite3.dbapi2 import Connection, Error
 import threading
 from flask import Flask, render_template, request, redirect, url_for, flash
 from flask import current_app, g
+from data import TBDatabase
 import sys
 import sqlite3
+
+from data.database import TBDatabase
 
 
 class Visuals:
@@ -16,6 +20,8 @@ class Visuals:
         the database file path (sqlite)
     secret_key : str
         the the app secret key
+    resolution_profiles: set
+        set of allowed resolutions
     """
 
     def __init__(self, database_path: str, secret_key: str, resolution_profiles: set):
@@ -36,17 +42,22 @@ class Visuals:
             "/add_movie", "add_movie", self.add_movie, methods=["POST", "GET"]
         )
         self.app.add_url_rule(
-            "/delete_movie/<string:id>", "delete_movie", self.delete_movie, methods=["POST", "DELETE"]
+            "/delete_movie/<string:id>",
+            "delete_movie",
+            self.delete_movie,
+            methods=["POST", "DELETE"],
         )
         self.resolution_profiles = resolution_profiles
-    
+
     def start(self) -> None:
         """Start the frontend
 
-         Returns:
-            None
+        Returns:
+           None
         """
-        threading.Thread(target=lambda: self.app.run(debug=True, use_reloader=False)).start()
+        threading.Thread(
+            target=lambda: self.app.run(debug=True, use_reloader=False)
+        ).start()
 
     def index(self) -> str:
         """Index endpoint
@@ -63,8 +74,7 @@ class Visuals:
             str: movies.html template
         """
         db = self.get_db()
-        db.execute("SELECT * FROM movies")
-        g.movies = db.execute("SELECT * FROM movies").fetchall()
+        g.movies = db.get_all_movies()
         return render_template("movies.html")
 
     def edit_movie(self, id) -> str:
@@ -72,7 +82,7 @@ class Visuals:
 
         Returns:
             str: edit_movie.html template
-        """        
+        """
         db = self.get_db()
         g.id = id
         if request.method == "POST":
@@ -80,29 +90,23 @@ class Visuals:
             max_size_mb = request.form.get("max_size_mb", type=int)
             resolutions = request.form["resolutions"]
             valid_input = self.validate_movie_fields(name, max_size_mb, resolutions)
-
             if valid_input:
-                db.execute(
-                    """
-                UPDATE movies 
-                SET name=?,
-                max_size_mb=?,
-                resolutions=?,
-                state=?
-                WHERE id=?
-                """,
-                    (name, max_size_mb, resolutions, 'SEARCHING', id),
+                db.update_movie(
+                    id=id,
+                    name=name,
+                    max_size_mb=max_size_mb,
+                    resolutions=resolutions,
+                    state=db.states["searching"],
                 )
-                db.commit()
                 flash("Movie Updated", "success")
                 return redirect(url_for("movies"))
-        data = db.execute("SELECT * FROM movies WHERE ID=?", (id,)).fetchone()
+        data = db.get_movie(id)
         g.name = data["name"]
         g.max_size_mb = data["max_size_mb"]
         g.resolutions = data["resolutions"]
         g.resolution_options = self.resolution_profiles
         return render_template("edit_movie.html")
-    
+
     def delete_movie(self, id: str) -> str:
         """Deletes a movie
 
@@ -113,18 +117,16 @@ class Visuals:
             str: movies template page
         """
         db = self.get_db()
-        db.execute("DELETE FROM movies WHERE id=?", (id,))
+        db.delete_movie(id)
         flash("Movie Deleted", "success")
-        db.commit()
         return redirect(url_for("movies"))
-
 
     def add_movie(self) -> str:
         """Add movie endpoint
 
         Returns:
             str: add_movie.html template
-        """        
+        """
         if request.method == "POST":
             db = self.get_db()
             name = request.form["name"]
@@ -133,31 +135,21 @@ class Visuals:
             valid_input = self.validate_movie_fields(name, max_size_mb, resolutions)
 
             if valid_input:
-                db.execute(
-                    """
-                INSERT INTO movies(name,max_size_mb,resolutions)
-                VALUES(?,?,?)
-                """,
-                    (name, max_size_mb, resolutions),
-                )
-                db.commit()
+                db.add_movie(name, max_size_mb, resolutions)
                 flash("Movie Added", "success")
                 return redirect(url_for("movies"))
 
         g.resolution_options = self.resolution_profiles
         return render_template("add_movie.html")
 
-    def get_db(self) -> Connection:
+    def get_db(self) -> TBDatabase:
         """Get database
 
         Returns:
             [type]: [description]
         """
-        if "db" not in g: # @TODO use the database class
-            g.db = sqlite3.connect(
-                current_app.config["DB"], detect_types=sqlite3.PARSE_DECLTYPES
-            )
-            g.db.row_factory = sqlite3.Row
+        if "db" not in g:
+            g.db = TBDatabase(current_app.config["DB"])
 
         return g.db
 
@@ -206,10 +198,11 @@ class Visuals:
         return valid_input
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import sys
+
     if len(sys.argv) < 2:
-        print('Usage: python frontend.py <db_path>', file=sys.stderr)
+        print("Usage: python frontend.py <db_path>", file=sys.stderr)
         exit(0)
-    
+
     t = TBFrontend(sys.argv[1], "test", {"1080p"})

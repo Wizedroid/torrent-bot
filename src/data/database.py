@@ -16,13 +16,14 @@ class TBDatabase:
     def __init__(self, db_file_path: str) -> None:
         self.db_file_path = db_file_path
         self.connection = sqlite3.connect(self.db_file_path)
+        self.connection.row_factory = dict_factory
         self.states = {
             "searching": "SEARCHING",
             "downloading": "DOWNLOADING",
             "seeding": "SEEDING",
             "completed": "COMPLETED",
             "deleted": "DELETED",
-        } # @TODO change to doted notation
+        }  # @TODO change to doted notation
 
     def create_schema(self) -> None:
         """Initializes the database by creating the necessary schema.
@@ -65,10 +66,50 @@ class TBDatabase:
         Returns:
             list: the the list of movies
         """
-        self.connection.row_factory = dict_factory
         cur = self.connection.cursor()
         cur.execute("SELECT * FROM movies")
         return cur.fetchall()
+
+    def get_movie(self, id: str) -> dict:
+        """retreives a movie
+
+        Args:
+            id (str): the id of the movie to retreive
+
+        Returns:
+            dict: the movie
+        """
+        cur = self.connection.cursor()
+        cur.execute("SELECT * FROM movies WHERE id=?", (id,))
+        return cur.fetchone()
+
+    def delete_movie(self, id: str) -> None:
+        """Delete a movie
+
+        Args:
+            id (str): the id of the movie to delete
+        """
+        cur = self.connection.cursor()
+        cur.execute("DELETE FROM movies WHERE id=?", (id,))
+        self.connection.commit()
+
+    def add_movie(self, name: str, max_size_mb: int, resolutions: str) -> None:
+        """Adds a movie to the database
+
+        Args:
+            name (str): the movie name
+            max_size_mb (int): the movie max size in megabytes
+            resolutions (str): the desired resolutions
+        """  
+        cur = self.connection.cursor()
+        cur.execute(
+            """
+                INSERT INTO movies(name,max_size_mb,resolutions)
+                VALUES(?,?,?)
+                """,
+            (name, max_size_mb, resolutions),
+        )
+        self.connection.commit()
 
     def update_movie(self, id: str, **kwargs: dict) -> None:
         """[summary]
