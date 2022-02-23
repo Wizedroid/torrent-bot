@@ -55,9 +55,11 @@ class Visuals:
         Returns:
            None
         """
-        threading.Thread(
+        thread = threading.Thread(
             target=lambda: self.app.run(debug=True, use_reloader=False)
-        ).start()
+        )
+        thread.daemon=True
+        thread.start()
 
     def index(self) -> str:
         """Index endpoint

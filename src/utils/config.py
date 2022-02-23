@@ -2,7 +2,20 @@ from typing import NamedTuple
 from flask import config
 import yaml
 import os
+from pathlib import Path
 from collections import namedtuple
+
+ROOT_PATH = f"{Path.home()}/.tbot"
+CONFIG_PATH = f"{ROOT_PATH}/config.yaml"
+DB_PATH = f"{ROOT_PATH}/tbot.db"
+RES_PROFILES = {
+    "1080p+bluray",
+    "1080p+webrip",
+    "1080p+web-dl",
+    "720p+bluray",
+    "720p+webrip",
+    "720p+web-dl",
+}
 
 jackett, qbit, movies, frontend = None, None, None, None
 _jackett = namedtuple("jackett", ["api_key", "api_url"])
