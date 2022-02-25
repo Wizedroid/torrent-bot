@@ -98,7 +98,7 @@ class Visuals:
                     name=name,
                     max_size_mb=max_size_mb,
                     resolutions=resolutions,
-                    state=db.states["searching"],
+                    state=db.states.SEARCHING,
                 )
                 flash("Movie Updated", "success")
                 return redirect(url_for("movies"))

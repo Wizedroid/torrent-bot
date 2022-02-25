@@ -46,14 +46,14 @@ class MovieProbe:
         """Starts the probe which initiates the search and download of movies
         stored in the database
         """
-        for movie_row in self.db.get_movies(state=self.db.states["searching"]):
+        for movie_row in self.db.get_movies(state=self.db.states.SEARCHING):
             movie = self.find_movie(movie_row)
             if movie:
                 magnetUri = movie["MagnetUri"]
                 self.qbit.download(magnetUri, self.movies_storage_dir)
                 self.db.update_movie(
                     id=movie_row.get("id"),
-                    state=self.db.states["downloading"],
+                    state=self.db.states.DOWNLOADING,
                     hash=movie['InfoHash'],
                 )
             else:
@@ -100,19 +100,19 @@ class MovieProbe:
             id = movie.get("id")
             state = movie.get("state")
             hash = movie.get("hash")
-            if state == self.db.states["searching"]:
+            if state == self.db.states.SEARCHING:
                 continue
             torrents = self.qbit.torrents_info(status_filter=None, hashes=hash)
             if not torrents:  # Was deleted by user
-                self.db.update_movie(id, state=self.db.states["deleted"])
+                self.db.update_movie(id, state=self.db.states.DELETED)
             for torrent in torrents:
-                if state == self.db.states["seeding"]:
+                if state == self.db.states.SEEDING:
                     time_since_added_sec = int(time.time()) - int(torrent["added_on"])
                     if time_since_added_sec > self.retention_preiod_sec:
                         self.qbit.delete(hash)
-                        self.db.update_movie(id, state=self.db.states["completed"])
+                        self.db.update_movie(id, state=self.db.states.COMPLETED)
                 elif torrent["state"] == "uploading":
-                        self.db.update_movie(id, state=self.db.states["seeding"])
+                        self.db.update_movie(id, state=self.db.states.SEEDING)
 
     def shutdown(self) -> None:
         """Close resources"""

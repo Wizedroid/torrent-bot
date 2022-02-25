@@ -2,6 +2,24 @@ from collections import namedtuple
 import sqlite3
 
 
+class TorrentState:
+    SEARCHING = "SEARCHING"  # Still being searched
+    DOWNLOADING = "DOWNLOADING"  # Currently being downloading
+    SEEDING = "SEEDING"  # Currently uploading
+    COMPLETED = "COMPLETED"  # Removed from seeding
+    DELETED = "DELETED" # Manually removed by the user
+
+    @staticmethod
+    def get_states() -> list:
+        return [
+            TorrentState.SEARCHING,
+            TorrentState.DOWNLOADING,
+            TorrentState.SEEDING,
+            TorrentState.COMPLETED,
+            TorrentState.DELETED
+        ]
+
+
 class TBDatabase:
     """
     Database Handler
@@ -17,13 +35,7 @@ class TBDatabase:
         self.db_file_path = db_file_path
         self.connection = sqlite3.connect(self.db_file_path)
         self.connection.row_factory = dict_factory
-        self.states = {
-            "searching": "SEARCHING",
-            "downloading": "DOWNLOADING",
-            "seeding": "SEEDING",
-            "completed": "COMPLETED",
-            "deleted": "DELETED",
-        }  # @TODO change to doted notation
+        self.states = TorrentState()
 
     def create_schema(self) -> None:
         """Initializes the database by creating the necessary schema.
@@ -39,7 +51,7 @@ class TBDatabase:
             "name" TEXT UNIQUE NOT NULL,
             "max_size_mb" INTEGER NOT NULL,
             "resolutions"	TEXT NOT NULL,
-            "state" TEXT NOT NULL DEFAULT '{self.states["searching"]}',
+            "state" TEXT NOT NULL DEFAULT '{self.states.SEARCHING}',
             "hash" TEXT)
         """
         cur.execute(sql)
@@ -53,7 +65,7 @@ class TBDatabase:
         Returns:
             list: the list of movies
         """
-        if state not in self.states.values():
+        if state not in self.states.get_states():
             raise Exception(f"Non allowed state={state}!")
         self.connection.row_factory = dict_factory
         cur = self.connection.cursor()
@@ -100,7 +112,7 @@ class TBDatabase:
             name (str): the movie name
             max_size_mb (int): the movie max size in megabytes
             resolutions (str): the desired resolutions
-        """  
+        """
         cur = self.connection.cursor()
         cur.execute(
             """
