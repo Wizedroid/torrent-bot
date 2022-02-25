@@ -42,55 +42,34 @@ class MovieProbe:
         self.movies_storage_dir = movies_storage_dir
         self.retention_preiod_sec = retention_preiod_sec
 
+    def start(self) -> None:
+        """Starts the probe which initiates the search, download and update
+        of movies
+        """
+        self.probe()
+        self.update()
+
     def probe(self) -> None:
-        """Starts the probe which initiates the search and download of movies
-        stored in the database
+        """Search and download movies added to the databse (state=SEARCHING)
         """
         for movie_row in self.db.get_movies(state=self.db.states.SEARCHING):
-            movie = self.find_movie(movie_row)
-            if movie:
+            jackett_result = self.jackett.search_movies(
+                name=movie_row.get("name"),
+                resolution_profile=movie_row.get("resolutions"),
+                max_size_bytes=self.mb_to_bytes(movie_row.get("max_size_mb")),
+                min_number_seeds=2,
+            )
+            if jackett_result:
+                movie = jackett_result[0]  # Highest number of seeds
                 magnetUri = movie["MagnetUri"]
                 self.qbit.download(magnetUri, self.movies_storage_dir)
                 self.db.update_movie(
-                    id=movie_row.get("id"),
+                    id=movie_row["id"],
                     state=self.db.states.DOWNLOADING,
-                    hash=movie['InfoHash'],
+                    hash=movie["InfoHash"],
                 )
             else:
                 logging.info(f"Movie {movie_row.get('name')} not found!")
-
-    def find_movie(self, movie: dict) -> dict:
-        """Find the movie torrent that corresponds the the specified movie
-
-        Args:
-            movie (dict): the movie entry
-
-        Returns:
-            [dict]: the movie found or None if no movie was fod
-        """
-        name = movie.get("name")
-        max_size_mb = movie.get("max_size_mb", None)
-        res = movie.get(
-            "resolutions",
-            [
-                "1080p+bluray",
-                "1080p+webrip",
-                "1080p+web-dl",
-                "720p+bluray",
-                "720p+webrip",
-                "720p+web-dl",
-            ],
-        )
-        lang = movie.get("lang", None)
-        movies = self.jackett.search_movies(
-            name=name,
-            resolution_profile=res,
-            max_size_bytes=self.mb_to_bytes(max_size_mb),
-            lang=lang,
-            min_number_seeds=2,
-        )
-        if movies:
-            return movies[0] # Highest number of seeds
 
     def update(self) -> None:
         """Updates the database state to reflect the current downloads
@@ -100,19 +79,27 @@ class MovieProbe:
             id = movie.get("id")
             state = movie.get("state")
             hash = movie.get("hash")
-            if state == self.db.states.SEARCHING:
+
+            # Do nothing with movies not found or already completed
+            if state in [self.db.states.SEARCHING, self.db.states.COMPLETED]:
                 continue
+            
+            # Check if the movies should change the state
             torrents = self.qbit.torrents_info(status_filter=None, hashes=hash)
-            if not torrents:  # Was deleted by user
-                self.db.update_movie(id, state=self.db.states.DELETED)
             for torrent in torrents:
-                if state == self.db.states.SEEDING:
+                # Remove the torrent if it is older than the retention period
+                if state == self.db.states.SEEDING: 
                     time_since_added_sec = int(time.time()) - int(torrent["added_on"])
                     if time_since_added_sec > self.retention_preiod_sec:
                         self.qbit.delete(hash)
                         self.db.update_movie(id, state=self.db.states.COMPLETED)
-                elif torrent["state"] == "uploading":
-                        self.db.update_movie(id, state=self.db.states.SEEDING)
+                # Change the torrent state if it finished the download and it is now uploading
+                elif state == self.db.states.DOWNLOADING and torrent["state"] == "uploading":
+                    self.db.update_movie(id, state=self.db.states.SEEDING)
+
+            # If no torrent were found for the given hash, it means it got deleted by the user
+            if not torrents:  
+                self.db.delete_movie(id)
 
     def shutdown(self) -> None:
         """Close resources"""

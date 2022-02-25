@@ -7,7 +7,6 @@ class TorrentState:
     DOWNLOADING = "DOWNLOADING"  # Currently being downloading
     SEEDING = "SEEDING"  # Currently uploading
     COMPLETED = "COMPLETED"  # Removed from seeding
-    DELETED = "DELETED" # Manually removed by the user
 
     @staticmethod
     def get_states() -> list:
@@ -15,8 +14,7 @@ class TorrentState:
             TorrentState.SEARCHING,
             TorrentState.DOWNLOADING,
             TorrentState.SEEDING,
-            TorrentState.COMPLETED,
-            TorrentState.DELETED
+            TorrentState.COMPLETED
         ]
 
 
