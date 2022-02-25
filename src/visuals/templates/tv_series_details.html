@@ -1,0 +1,25 @@
+{% extends 'layout.html' %}
+{% block body %}
+  <h3 class='text-center text-muted mb-3'>Torrents Bot</h3>
+  <p class='text-left'><a href='{{url_for("tv_series")}}' class='btn btn-dark '>Back</a></p>
+  <table class='table table-bordered'>
+    <thead>
+      <th>Name</th>
+      <th>Season</th>
+      <th>Episode</th>
+      <th>+Edit</th>
+      <th>-Delete</th>
+    </thead>
+    <tbody>
+      {% for series in g.tv_series_details %}
+        <tr>
+          <td>{{series.name}}</td>
+          <td>Season {{series.season}}</td>
+          <td>{{series.episode}}</td>
+          <td>TBD</td>
+          <td>TBD</td>
+        </tr>
+      {%endfor%}
+    </tbody>
+  </table>
+{% endblock %}

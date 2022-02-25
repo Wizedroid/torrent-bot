@@ -32,6 +32,12 @@ class Visuals:
         self.app.add_url_rule("/", "index", self.index)
         self.app.add_url_rule("/index", "index", self.index)
         self.app.add_url_rule("/movies", "movies", self.movies)
+        self.app.add_url_rule("/tv_series", "tv_series", self.tv_series)
+        self.app.add_url_rule(
+            "/tv_series_details/<string:id>",
+            "tv_series_details",
+            self.tv_series_details,
+        )
         self.app.add_url_rule(
             "/edit_movie/<string:id>",
             "edit_movie",
@@ -39,12 +45,27 @@ class Visuals:
             methods=["POST", "GET"],
         )
         self.app.add_url_rule(
+            "/edit_series/<string:id>",
+            "edit_series",
+            self.edit_series,
+            methods=["POST", "GET"],
+        )
+        self.app.add_url_rule(
             "/add_movie", "add_movie", self.add_movie, methods=["POST", "GET"]
+        )
+        self.app.add_url_rule(
+            "/add_series", "add_series", self.add_series, methods=["POST", "GET"]
         )
         self.app.add_url_rule(
             "/delete_movie/<string:id>",
             "delete_movie",
             self.delete_movie,
+            methods=["POST", "DELETE"],
+        )
+        self.app.add_url_rule(
+            "/delete_series/<string:id>",
+            "delete_series",
+            self.delete_series,
             methods=["POST", "DELETE"],
         )
         self.resolution_profiles = resolution_profiles
@@ -58,7 +79,7 @@ class Visuals:
         thread = threading.Thread(
             target=lambda: self.app.run(debug=True, use_reloader=False)
         )
-        thread.daemon=True
+        thread.daemon = True
         thread.start()
 
     def index(self) -> str:
@@ -78,6 +99,26 @@ class Visuals:
         db = self.get_db()
         g.movies = db.get_all_movies()
         return render_template("movies.html")
+
+    def tv_series(self) -> str:
+        """TV Series endpoint
+
+        Returns:
+            str: tv_series.html template
+        """
+        db = self.get_db()
+        g.tv_series = db.get_all_series()
+        return render_template("tv_series.html")
+
+    def tv_series_details(self, id) -> str:
+        """TV Series endpoint
+
+        Returns:
+            str: tv_series.html template
+        """
+        db = self.get_db()
+        g.tv_series_details = db.get_tv_series_details(id)
+        return render_template("tv_series_details.html")
 
     def edit_movie(self, id) -> str:
         """Edit Movie endpoint
@@ -109,6 +150,37 @@ class Visuals:
         g.resolution_options = self.resolution_profiles
         return render_template("edit_movie.html")
 
+    def edit_series(self, id: str) -> str:
+        """Edit Series endpoint
+
+        Returns:
+            str: edit_series.html template
+        """
+        db = self.get_db()
+        g.id = id
+        if request.method == "POST":
+            name = request.form["name"]
+            max_episode_size_mb = request.form.get("max_episode_size_mb", type=int)
+            resolutions = request.form["resolutions"]
+            valid_input = self.validate_movie_fields(
+                name, max_episode_size_mb, resolutions
+            )
+            if valid_input:
+                db.update_series(
+                    id=id,
+                    name=name,
+                    max_episode_size_mb=max_episode_size_mb,
+                    resolutions=resolutions,
+                )
+                flash("Series Updated", "success")
+                return redirect(url_for("tv_series"))
+        data = db.get_series(id)
+        g.name = data["name"]
+        g.max_episode_size_mb = data["max_episode_size_mb"]
+        g.resolutions = data["resolutions"]
+        g.resolution_options = self.resolution_profiles
+        return render_template("edit_series.html")
+
     def delete_movie(self, id: str) -> str:
         """Deletes a movie
 
@@ -122,6 +194,20 @@ class Visuals:
         db.delete_movie(id)
         flash("Movie Deleted", "success")
         return redirect(url_for("movies"))
+
+    def delete_series(self, id: str) -> str:
+        """Deletes a movie
+
+        Args:
+            id (str): the id of the movie to delete
+
+        Returns:
+            str: movies template page
+        """
+        db = self.get_db()
+        db.delete_series(id)
+        flash("Tv Series Deleted", "success")
+        return redirect(url_for("tv_series"))
 
     def add_movie(self) -> str:
         """Add movie endpoint
@@ -143,6 +229,29 @@ class Visuals:
 
         g.resolution_options = self.resolution_profiles
         return render_template("add_movie.html")
+
+    def add_series(self) -> str:
+        """Add series endpoint
+
+        Returns:
+            str: add_series.html template
+        """
+        if request.method == "POST":
+            db = self.get_db()
+            name = request.form["name"]
+            max_episode_size_mb = request.form.get("max_episode_size_mb", type=int)
+            resolutions = request.form["resolutions"]
+            valid_input = self.validate_movie_fields(
+                name, max_episode_size_mb, resolutions
+            )
+
+            if valid_input:
+                db.add_series(name, max_episode_size_mb, resolutions)
+                flash("TV Series Added", "success")
+                return redirect(url_for("tv_series"))
+
+        g.resolution_options = self.resolution_profiles
+        return render_template("add_series.html")
 
     def get_db(self) -> TBDatabase:
         """Get database
@@ -180,19 +289,16 @@ class Visuals:
         """
         valid_input = True
         # Movie name
-        name = request.form["name"]
         if len(name) < 3:
             valid_input = False
             flash("The name must have at least 3 characters", "danger")
 
         # Movie Maximum Size
-        max_size_mb = request.form.get("max_size_mb", type=int)
         if max_size_mb < 1:
             valid_input = False
             flash("The max size must be at least 1 MB!", "danger")
 
         # Movie Resolution Set
-        resolutions = request.form["resolutions"]
         if resolutions not in self.resolution_profiles:
             valid_input = False
             flash("Resolution profile not supported!", "danger")
