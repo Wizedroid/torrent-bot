@@ -60,8 +60,8 @@ class TBDatabase:
             "name" TEXT UNIQUE NOT NULL,
             "max_season_size_mb" INTEGER NOT NULL,
             "resolutions"	TEXT NOT NULL,
-            "state" TEXT NOT NULL DEFAULT '{self.states.SEARCHING}',
-            "has_ended"  BOOLEAN NOT NULL CHECK (has_ended IN (0, 1)) DEFAULT 0)
+            "state" TEXT NOT NULL DEFAULT '{self.states.SEARCHING}'
+        )
         """
         cur.execute(sql)
 
@@ -78,15 +78,15 @@ class TBDatabase:
         cur.execute(sql)
 
         # Create Complete tv series view
-        sql = f"""CREATE VIEW IF NOT EXISTS tv_series_seasons_view
+        sql = f"""CREATE VIEW IF NOT EXISTS tv_series_with_seasons_view
             AS
             SELECT 
                 tv_series.id as series_id,
-                tv_series.name as name,
+                tv_series.name as series_name,
                 tv_series_seasons.id as season_id,
-                tv_series_seasons.season_number as season,
-                tv_series_seasons.state as state,
-                tv_series_seasons.hash as hash
+                tv_series_seasons.season_number as season_number,
+                tv_series_seasons.state as season_state,
+                tv_series_seasons.hash as season_hash
             FROM tv_series
             INNER JOIN tv_series_seasons on tv_series.id = tv_series_seasons.series_id;
         """
@@ -149,7 +149,7 @@ class TBDatabase:
     
     def get_all_series_with_seasons(self) -> list:
         cur = self.connection.cursor()
-        cur.execute("SELECT * FROM tv_series_seasons_view;")
+        cur.execute("SELECT * FROM tv_series_with_seasons_view;")
         return cur.fetchall()
     
     def get_tv_series_with_seasons(self, series_id: str) -> list:
@@ -162,7 +162,7 @@ class TBDatabase:
             list: the list of seasons
         """
         cur = self.connection.cursor()
-        cur.execute("SELECT * from tv_series_seasons_view WHERE series_id=?", (series_id,))
+        cur.execute("SELECT * from tv_series_with_seasons_view WHERE series_id=?", (series_id,))
         return cur.fetchall()
 
     def get_movie(self, id: str) -> dict:
@@ -314,7 +314,7 @@ class TBDatabase:
             Exception: if the kwargs is empty or none or if the key arguments don't correspond to
             a database column
         """
-        tv_series_table_columns = ["name", "max_season_size_mb", "resolutions"]
+        tv_series_table_columns = ["name", "max_season_size_mb", "resolutions", "state"]
         self.connection.row_factory = dict_factory
         cur = self.connection.cursor()
         columns_to_update = ""

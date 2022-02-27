@@ -63,7 +63,7 @@ class TVSeriesProbe:
             series_max_season_size_mb = self.mb_to_bytes(series_row.get("max_season_size_mb"))
             series_resolution_profile = series_row.get("resolutions")
             seasons = self.db.get_tv_series_with_seasons(series_id)
-            season_numbers = [season['season'] for season in seasons]
+            season_numbers = [season['season_number'] for season in seasons]
             epguide_show_info = self.epguides.get_show_info(series_name)
             # Seach for missing seasons
             for season in [season_number for season_number in epguide_show_info.keys() if int(season_number) not in season_numbers]:
@@ -72,9 +72,9 @@ class TVSeriesProbe:
         
             # Download full seasons (@TODO support for individual episodes)
             for season in seasons:
-                season_state = season['state']
+                season_state = season['season_state']
                 season_id = season['season_id']
-                season_number = season['season']
+                season_number = season['season_number']
                 if season_state == self.db.states.SEARCHING:
                     hash = self.download_full_season(series_name, season_number, series_max_season_size_mb, series_resolution_profile)
                     if hash:

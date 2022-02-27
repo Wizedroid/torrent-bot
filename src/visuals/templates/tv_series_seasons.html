@@ -13,8 +13,8 @@
     <tbody>
       {% for season in g.tv_series_seasons %}
         <tr>
-          <td>{{season.season}}</td>
-          <td>{{season.state}}</td>
+          <td>{{season.season_number}}</td>
+          <td>{{season.season_state}}</td>
           <td><form action="{{ url_for('delete_series_season', series_id=season['series_id'], season_id=season['season_id']) }}" method="post">
             <input class="btn btn-danger" type="submit" value="Delete" onclick="return confirm('Are you sure?');">
           </form></td>
