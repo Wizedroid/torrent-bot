@@ -1,2 +1,2 @@
-python-qbittorrent
+qbittorrent-api
 flask

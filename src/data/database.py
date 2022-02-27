@@ -58,44 +58,47 @@ class TBDatabase:
         sql = f"""CREATE TABLE IF NOT EXISTS tv_series (
             "id"	INTEGER PRIMARY KEY AUTOINCREMENT,
             "name" TEXT UNIQUE NOT NULL,
-            "max_episode_size_mb" INTEGER NOT NULL,
-            "resolutions"	TEXT NOT NULL)
+            "max_season_size_mb" INTEGER NOT NULL,
+            "resolutions"	TEXT NOT NULL,
+            "state" TEXT NOT NULL DEFAULT '{self.states.SEARCHING}',
+            "has_ended"  BOOLEAN NOT NULL CHECK (has_ended IN (0, 1)) DEFAULT 0)
         """
         cur.execute(sql)
 
-        # Create TV series episodes
-        sql = f"""CREATE TABLE IF NOT EXISTS tv_series_episodes (
+        # Create TV series seasons
+        sql = f"""CREATE TABLE IF NOT EXISTS tv_series_seasons (
             "id"	INTEGER PRIMARY KEY AUTOINCREMENT,
             "series_id" INTEGER,
-            "season" INTEGER NOT NULL,
-            "episode"	INTEGER NOT NULL,
+            "season_number" INTEGER NOT NULL,
             "state" TEXT NOT NULL DEFAULT '{self.states.SEARCHING}',
             "hash" TEXT,
             FOREIGN KEY(series_id) REFERENCES tv_series(id),
-            UNIQUE(series_id, season, episode))
+            UNIQUE(series_id, season_number))
         """
         cur.execute(sql)
 
         # Create Complete tv series view
-        sql = f"""CREATE VIEW IF NOT EXISTS tv_series_view 
+        sql = f"""CREATE VIEW IF NOT EXISTS tv_series_seasons_view
             AS
             SELECT 
                 tv_series.id as id,
                 tv_series.name as name,
-                tv_series_episodes.season as season,
-                tv_series_episodes.episode as episode,
-                tv_series_episodes.state as state,
-                tv_series_episodes.hash as hash
+                tv_series_seasons.season_number as season,
+                tv_series_seasons.state as state,
+                tv_series_seasons.hash as hash
             FROM tv_series
-            INNER JOIN tv_series_episodes on tv_series.id = tv_series_episodes.series_id;
+            INNER JOIN tv_series_seasons on tv_series.id = tv_series_seasons.series_id;
         """
         cur.execute(sql)
 
         # commit changes and close the connection
         self.connection.commit()
 
-    def get_movies(self, state: str) -> list:
-        """Retrieves all movies stored in the database
+    def get_movies_with_state(self, state: str) -> list:
+        """Retrieves all movies stored in the database with the specified state
+
+        Args:
+            state (str): the state (must match a valid state)
 
         Returns:
             list: the list of movies
@@ -105,6 +108,22 @@ class TBDatabase:
         self.connection.row_factory = dict_factory
         cur = self.connection.cursor()
         cur.execute("SELECT * FROM movies WHERE state=?", (state,))
+        return cur.fetchall()
+    
+    def get_series_with_state(self, state: str) -> list:
+        """Retrieves all tv series stored in the database with the specified state
+
+        Args:
+            state (str): the state (must match a valid state)
+
+        Returns:
+            list: the list of tv series
+        """
+        if state not in self.states.get_states():
+            raise Exception(f"Non allowed state={state}!")
+        self.connection.row_factory = dict_factory
+        cur = self.connection.cursor()
+        cur.execute("SELECT * FROM tv_series WHERE state=?", (state,))
         return cur.fetchall()
 
     def get_all_movies(self) -> list:
@@ -127,17 +146,17 @@ class TBDatabase:
         cur.execute("SELECT * FROM tv_series;")
         return cur.fetchall()
     
-    def get_tv_series_details(self, id: str) -> list:
-        """Retreives all episodes for the tv series with the sepecified id
+    def get_tv_series_seasons(self, series_id: str) -> list:
+        """Retreives all seasons for the tv series with the sepecified id
 
         Args:
             id (str): the tv series id
 
         Returns:
-            list: the list of episodes
+            list: the list of seasons
         """
         cur = self.connection.cursor()
-        cur.execute("SELECT * from tv_series_view WHERE id=?", (id,))
+        cur.execute("SELECT * from tv_series_seasons WHERE series_id=?", (series_id,))
         return cur.fetchall()
 
     def get_movie(self, id: str) -> dict:
@@ -204,21 +223,39 @@ class TBDatabase:
         )
         self.connection.commit()
 
-    def add_series(self, name: str, max_episode_size_mb: int, resolutions: str) -> None:
+    def add_series(self, name: str, max_season_size_mb: int, resolutions: str) -> None:
         """Adds a tv series to the database
 
         Args:
             name (str): the tv seties name
-            max_episode_size_mb (int): the  max size of an episode
+            max_season_size_mb (int): the  max size of an episode
             resolutions (str): the desired resolutions
         """
         cur = self.connection.cursor()
         cur.execute(
             """
-                INSERT INTO tv_series(name,max_episode_size_mb,resolutions)
+                INSERT INTO tv_series(name,max_season_size_mb,resolutions)
                 VALUES(?,?,?)
                 """,
-            (name, max_episode_size_mb, resolutions),
+            (name, max_season_size_mb, resolutions),
+        )
+        self.connection.commit()
+    
+
+    def add_series_season(self, series_id: str, season_number: str):
+        """Add series season
+
+        Args:
+            series_id (str): the series id
+            season_number (str): the season number
+        """
+        cur = self.connection.cursor()
+        cur.execute(
+            """
+                INSERT INTO tv_series_seasons(series_id,season_number)
+                VALUES(?,?)
+                """,
+            (series_id, season_number),
         )
         self.connection.commit()
 
@@ -266,7 +303,7 @@ class TBDatabase:
             Exception: if the kwargs is empty or none or if the key arguments don't correspond to
             a database column
         """
-        tv_series_table_columns = ["name", "max_episode_size_mb", "resolutions"]
+        tv_series_table_columns = ["name", "max_season_size_mb", "resolutions"]
         self.connection.row_factory = dict_factory
         cur = self.connection.cursor()
         columns_to_update = ""
@@ -286,6 +323,31 @@ class TBDatabase:
 
         cur.execute(
             f"UPDATE tv_series SET {columns_to_update} WHERE id=?",
+            values,
+        )
+        self.connection.commit()
+
+    def update_series_season(self, id, **kwargs: dict) -> None:
+        tv_series_season_table_columns = [ "season", "state", "hash"]
+        self.connection.row_factory = dict_factory
+        cur = self.connection.cursor()
+        columns_to_update = ""
+        values = ()
+        if not kwargs:
+            raise Exception("At least one argument must be specified")
+
+        for key, value in kwargs.items():
+            if key not in tv_series_season_table_columns:
+                raise Exception(
+                    f"The key argument must be one of the following: {tv_series_season_table_columns}"
+                )
+            columns_to_update += f"{key}=?, "
+            values += (value,)
+        values += (id,)
+        columns_to_update = columns_to_update[:-2]
+
+        cur.execute(
+            f"UPDATE tv_series_seasons SET {columns_to_update} WHERE id=?",
             values,
         )
         self.connection.commit()
@@ -320,5 +382,5 @@ if __name__ == "__main__":
 
     db = TBDatabase(sys.argv[1])
     db.create_schema()
-    print(db.get_movies())
+    print(db.get_all_movies())
     db.close()

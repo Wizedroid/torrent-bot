@@ -1,6 +1,6 @@
 from urllib.parse import quote
-from itsdangerous import json
 import requests
+import json
 
 class EPGuidesClient:
 
@@ -20,4 +20,4 @@ class EPGuidesClient:
 if __name__ == '__main__':
     epgclient = EPGuidesClient()
     info = epgclient.get_show_info('The twilight zone')
-    print(info['1'][0])
+    print(json.dumps(info))

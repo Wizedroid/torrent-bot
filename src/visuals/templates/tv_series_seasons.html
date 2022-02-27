@@ -6,16 +6,15 @@
     <thead>
       <th>Name</th>
       <th>Season</th>
-      <th>Episode</th>
       <th>+Edit</th>
       <th>-Delete</th>
     </thead>
     <tbody>
-      {% for series in g.tv_series_details %}
+      {% for season in g.tv_series_seasons %}
         <tr>
-          <td>{{series.name}}</td>
-          <td>Season {{series.season}}</td>
-          <td>{{series.episode}}</td>
+          <td>{{season.name}}</td>
+          <td>Season {{season.season}}</td>
+          <td>State {{season.state}}</td>
           <td>TBD</td>
           <td>TBD</td>
         </tr>

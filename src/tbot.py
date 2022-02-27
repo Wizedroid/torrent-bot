@@ -5,6 +5,8 @@ from utils import config
 from data import TBDatabase
 from tasks import MovieProbe
 from visuals import Visuals
+from tasks import TVSeriesProbe
+
 
 logging.basicConfig(level=logging.INFO)
 
@@ -38,6 +40,15 @@ class TorrentBot:
             config.movies.directory,
             config.movies.rentention_period_sec,
         )
+        self.series_probe = TVSeriesProbe(
+            config.jackett.api_key,
+            config.jackett.api_url,
+            config.qbit.hostname,
+            config.qbit.port,
+            config.DB_PATH,
+            config.series.directory,
+            config.series.rentention_period_sec,
+        )
         self.running = True
         signal.signal(signal.SIGINT, self.exit_gracefully)
         signal.signal(signal.SIGTERM, self.exit_gracefully)
@@ -52,6 +63,7 @@ class TorrentBot:
         while self.running:
             logging.debug("Probing...")
             self.movies_probe.start()
+            self.series_probe.start()
             logging.debug(f"Going to sleep...")
             time.sleep(5)
 
