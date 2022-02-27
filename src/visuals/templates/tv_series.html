@@ -8,6 +8,7 @@
       <th>Max Size of season</th>
       <th>Resolutions</th>
       <th>State</th>
+      <th>Is Complete</th>
       <th>>Details</th>
       <th>+Edit</th>
       <th>-Delete</th>
@@ -19,6 +20,11 @@
           <td>{{series.max_season_size_mb}} MB</td>
           <td>{{series.resolutions}}</td>
           <td>{{series.state}}</td>
+          {% if series.has_ended %}
+          <td>YES</td>
+          {% else %}
+          <td>NO</td>
+          {% endif %}
           <td><a href='{{url_for("tv_series_seasons",id=series.id)}}' class='btn btn-info'>Details</a></td>
           <td><a href='{{url_for("edit_series",id=series.id)}}' class='btn btn-primary'>Edit</a></td>
           <td><form action="{{ url_for('delete_series', id=series.id) }}" method="post">

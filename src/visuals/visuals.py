@@ -68,6 +68,12 @@ class Visuals:
             self.delete_series,
             methods=["POST", "DELETE"],
         )
+        self.app.add_url_rule(
+            "/delete_series_season/<string:series_id>/<string:season_id>",
+            "delete_series_season",
+            self.delete_series_season,
+            methods=["POST", "DELETE"],
+        )
         self.resolution_profiles = resolution_profiles
 
     def start(self) -> None:
@@ -117,7 +123,9 @@ class Visuals:
             str: tv_series.html template
         """
         db = self.get_db()
-        g.tv_series_seasons = db.get_tv_series_seasons(id)
+        g.tv_series_seasons = db.get_tv_series_with_seasons(id)
+        if g.tv_series_seasons:
+            g.series_name = g.tv_series_seasons[0]['name']
         return render_template("tv_series_seasons.html")
 
     def edit_movie(self, id) -> str:
@@ -208,6 +216,13 @@ class Visuals:
         db.delete_series(id)
         flash("Tv Series Deleted", "success")
         return redirect(url_for("tv_series"))
+    
+    def delete_series_season(self, series_id, season_id):
+        db = self.get_db()
+        db.delete_series_season(series_id, season_id)
+        flash("Tv Season deleted", "success")
+        return redirect(url_for("tv_series_seasons",id=series_id))
+
 
     def add_movie(self) -> str:
         """Add movie endpoint

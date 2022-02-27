@@ -81,8 +81,9 @@ class TBDatabase:
         sql = f"""CREATE VIEW IF NOT EXISTS tv_series_seasons_view
             AS
             SELECT 
-                tv_series.id as id,
+                tv_series.id as series_id,
                 tv_series.name as name,
+                tv_series_seasons.id as season_id,
                 tv_series_seasons.season_number as season,
                 tv_series_seasons.state as state,
                 tv_series_seasons.hash as hash
@@ -146,7 +147,7 @@ class TBDatabase:
         cur.execute("SELECT * FROM tv_series;")
         return cur.fetchall()
     
-    def get_tv_series_seasons(self, series_id: str) -> list:
+    def get_tv_series_with_seasons(self, series_id: str) -> list:
         """Retreives all seasons for the tv series with the sepecified id
 
         Args:
@@ -156,7 +157,7 @@ class TBDatabase:
             list: the list of seasons
         """
         cur = self.connection.cursor()
-        cur.execute("SELECT * from tv_series_seasons WHERE series_id=?", (series_id,))
+        cur.execute("SELECT * from tv_series_seasons_view WHERE series_id=?", (series_id,))
         return cur.fetchall()
 
     def get_movie(self, id: str) -> dict:
@@ -203,6 +204,11 @@ class TBDatabase:
         """
         cur = self.connection.cursor()
         cur.execute("DELETE FROM tv_series WHERE id=?", (id,))
+        self.connection.commit()
+    
+    def delete_series_season(self, series_id: str, season_id: str):
+        cur = self.connection.cursor()
+        cur.execute("DELETE FROM tv_series_seasons WHERE series_id=? AND id=?", (series_id,season_id))
         self.connection.commit()
 
     def add_movie(self, name: str, max_size_mb: int, resolutions: str) -> None:
@@ -328,7 +334,7 @@ class TBDatabase:
         self.connection.commit()
 
     def update_series_season(self, id, **kwargs: dict) -> None:
-        tv_series_season_table_columns = [ "season", "state", "hash"]
+        tv_series_season_table_columns = [ "season_number", "state", "hash"]
         self.connection.row_factory = dict_factory
         cur = self.connection.cursor()
         columns_to_update = ""

@@ -34,9 +34,9 @@ def load_config(path):
             qbit = _qbit(hostname=configuration['qbittorrent']['hostname'],
                                port=configuration['qbittorrent']['port'])
             movies = _movies(directory=configuration['movies']['directory'],
-                             rentention_period_sec=configuration['movies']['rentention_period_sec'])
+                             rentention_period_sec=configuration['movies']['retention_period_sec'])
             series = _series(directory=configuration['series']['directory'],
-                             rentention_period_sec=configuration['series']['rentention_period_sec'])
+                             rentention_period_sec=configuration['series']['retention_period_sec'])
             frontend = _frontend(secret_key=configuration['frontend']['secret_key'])
     else:
         print(f"Config file not found. ({path})!")
