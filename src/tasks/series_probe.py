@@ -104,7 +104,35 @@ class TVSeriesProbe:
             logging.info(f"TV Series {name} not found!")
 
     def update(self) -> None:
-       pass
+        """Updates the database state to reflect the current downloads
+        """
+        seasons = self.db.get_all_series_with_seasons()
+        for season in seasons:
+            series_id = season.get("series_id")
+            season_id = season.get("season_id")
+            state = season.get("state")
+            hash = season.get("hash")
+
+            # Do nothing with movies not found or already completed
+            if state in [self.db.states.SEARCHING, self.db.states.COMPLETED]:
+                continue
+            
+            # Check if the movies should change the state
+            torrents = self.qbit.torrents_info(status_filter=None, hashes=hash)
+            for torrent in torrents:
+                # Remove the torrent if it is older than the retention period
+                if state == self.db.states.SEEDING: 
+                    time_since_added_sec = int(time.time()) - int(torrent["added_on"])
+                    if time_since_added_sec > self.retention_preiod_sec:
+                        self.qbit.delete(hash)
+                        self.db.update_series_season(season_id, state=self.db.states.COMPLETED)
+                # Change the torrent state if it finished the download and it is now uploading
+                elif state == self.db.states.DOWNLOADING and torrent["state"] == "uploading":
+                    self.db.update_series_season(season_id, state=self.db.states.SEEDING)
+
+            # If no torrent were found for the given hash, it means it got deleted by the user
+            if not torrents:  
+                self.db.delete_series_season(series_id=series_id, season_id=season_id)
 
     def shutdown(self) -> None:
         """Close resources"""

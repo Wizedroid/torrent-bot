@@ -147,6 +147,11 @@ class TBDatabase:
         cur.execute("SELECT * FROM tv_series;")
         return cur.fetchall()
     
+    def get_all_series_with_seasons(self) -> list:
+        cur = self.connection.cursor()
+        cur.execute("SELECT * FROM tv_series_seasons_view;")
+        return cur.fetchall()
+    
     def get_tv_series_with_seasons(self, series_id: str) -> list:
         """Retreives all seasons for the tv series with the sepecified id
 
