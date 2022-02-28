@@ -22,11 +22,10 @@
           <td>{{series.resolutions}}</td>
           <td>{{series.state}}</td>
           <td>
-          <a href='{{url_for("tv_series_seasons",id=series.id)}}' class='btn btn-info'>Details</a>
-          <a href='{{url_for("edit_series",id=series.id)}}' class='btn btn-primary'>Edit</a>
-          <p>
+          <a href='{{url_for("tv_series_seasons",id=series.id)}}' class='btn btn-info' style="float:left">Details</a>
+          <a href='{{url_for("edit_series",id=series.id)}}' class='btn btn-primary' style="float:left">Edit</a>
           <form action="{{ url_for('delete_series', id=series.id) }}" method="post">
-            <input class="btn btn-danger" type="submit" value="Delete" onclick="return confirm('Are you sure?');">
+            <input class="btn btn-danger" type="submit" value="Delete" onclick="return confirm('Are you sure?');" style="float:left">
           </form>
         </td>
         </tr>
