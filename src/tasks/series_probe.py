@@ -118,7 +118,8 @@ class TVSeriesProbe:
         for show in series:
             seasons = self.db.get_tv_series_with_seasons(show['id'])
             for season in seasons:
-                self.qbit.delete(season['season_hash'])
+                if season['season_hash']:
+                    self.qbit.delete(season['season_hash'])
             self.db.delete_series(show['id'])
 
         seasons = self.db.get_all_series_with_seasons()
