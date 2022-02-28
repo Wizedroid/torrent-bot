@@ -108,7 +108,9 @@ class JackettClient:
                         continue
                     if min_number_seeds is not None and seeders < min_number_seeds:
                         continue
-                    if not re.search(f"(season|s).[0-9]?{season}", title):
+                    if not re.search(f"(season|s)[0-9]?{season}", title):
+                        continue
+                    if re.search(f"(episode|ep|e)[0-9]+", title):
                         continue
                     tv_series.append(result)
         return sorted(tv_series, key = lambda i: i['Seeders'], reverse=True)
