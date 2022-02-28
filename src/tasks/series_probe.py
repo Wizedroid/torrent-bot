@@ -57,7 +57,7 @@ class TVSeriesProbe:
         """Search and download series added to the databse (state=SEARCHING)
         """
         # Search for all seaons and episodes of each added series
-        for series_row in self.db.get_series_with_state(state=self.db.states.SEARCHING):
+        for series_row in self.db.get_all_series():
             series_id = series_row.get('id')
             series_name = series_row.get('name')
             max_episode_size_bytes = self.mb_to_bytes(series_row.get("max_episode_size_mb"))
@@ -110,8 +110,26 @@ class TVSeriesProbe:
     def update(self) -> None:
         """Updates the database state to reflect the current downloads
         """
+        #(@TODO !refractor this method and clean!)
+
         seasons = self.db.get_all_series_with_seasons()
         for season in seasons:
+            series_id = season.get("series_id")
+            series_state = season.get('series_state')
+
+            # Update series state 
+            series_season_states = self.db.get_season_states(series_id=series_id)
+            if self.db.states.DOWNLOADING in series_season_states and series_state!=self.db.states.DOWNLOADING:
+                self.db.update_series(series_id, state=self.db.states.DOWNLOADING)
+            if len(series_season_states)==1 and not series_state in series_season_states:
+                if self.db.states.PAUSED in series_season_states:
+                    self.db.update_series(series_id, state=self.db.states.PAUSED)
+                elif self.db.states.COMPLETED in series_season_states:
+                    self.db.update_series(series_id, state=self.db.states.COMPLETED)
+                elif self.db.states.SEEDING in series_season_states:
+                    self.db.update_series(series_id, state=self.db.states.SEEDING)
+
+            # Update seasons state 
             season_id = season.get("season_id")
             season_state = season.get("season_state")
             season_hash = season.get("season_hash")
@@ -139,7 +157,7 @@ class TVSeriesProbe:
                 # Stop download for torrents stopped
                 elif season_state == self.db.states.PAUSED and not 'paused' in torrent["state"].lower():
                     self.qbit.stop(season_hash)
-        
+    
         # Remove all torrents for deleted series
         series = self.db.get_series_with_state(self.db.states.DELETING)
         for show in series:

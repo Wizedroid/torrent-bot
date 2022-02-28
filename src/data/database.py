@@ -369,6 +369,15 @@ class TBDatabase:
             values,
         )
         self.connection.commit()
+    
+    def get_season_states(self, series_id: str):
+        cur = self.connection.cursor()
+        cur.execute("SELECT season_state FROM tv_series_with_seasons_view WHERE series_id=?", (series_id,))
+        result =  cur.fetchall()
+        state_set = set()
+        for row in result:
+            state_set.add(row['season_state'])
+        return state_set
 
     def close(self) -> None:
         """Close database connection"""

@@ -89,12 +89,6 @@ class Visuals:
             self.resume_season,
             methods=["POST", "DELETE"],
         )
-        self.app.add_url_rule(
-            "/set_series_complete/<string:id>",
-            "set_series_complete",
-            self.set_series_complete,
-            methods=["GET", "POST"],
-        )
         self.resolution_profiles = resolution_profiles
 
     def start(self) -> None:
@@ -314,20 +308,6 @@ class Visuals:
 
         g.resolution_options = self.resolution_profiles
         return render_template("add_series.html")
-    
-    def set_series_complete(self, id: str) -> str:
-        """Set series state as complete
-
-        Args:
-            id (str): the series if
-
-        Returns:
-            str: tv series template page
-        """
-        db = self.get_db()
-        db.update_series(id=id, state=db.states.COMPLETED)
-        flash("Tv Series Marked as Completed!", "success")
-        return redirect(url_for("tv_series"))
 
     def get_db(self) -> TBDatabase:
         """Get database
