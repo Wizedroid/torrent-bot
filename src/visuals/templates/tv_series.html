@@ -5,7 +5,7 @@
   <table class='table table-bordered'>
     <thead>
       <th>Name</th>
-      <th>Max Size of episode</th>
+      <th>Max Size (per episode)</th>
       <th>Resolutions</th>
       <th>State</th>
       <th>Manage</th>
@@ -14,7 +14,11 @@
       {% for series in g.tv_series %}
         <tr>
           <td>{{series.name}}</td>
+          {% if series.max_episode_size_mb >= 1024%}
+          <td>{{(series.max_episode_size_mb/1024) | int}} GB</td>
+          {% else %}
           <td>{{series.max_episode_size_mb}} MB</td>
+          {% endif %}
           <td>{{series.resolutions}}</td>
           <td>{{series.state}}</td>
           <td>

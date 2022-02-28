@@ -5,10 +5,6 @@
       <h3>Edit Movie</h3><hr>
       <form method='post' action='{{url_for("edit_movie",id=g.id)}}'>
         <div class='form-group'>
-          <label>Name</label>
-          <input type='text' name='name' required class='form-control' value='{{g.name}}'>
-        </div>
-        <div class='form-group'>
           <label>Max Size (MB)</label>
           <input type='text' name='max_size_mb' required class='form-control' value='{{g.max_size_mb}}'>
         </div>
