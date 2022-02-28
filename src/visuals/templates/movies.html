@@ -4,7 +4,6 @@
   <p class='text-right'><a href='{{url_for("add_movie")}}' class='btn btn-success '>+Add Movie</a></p>
   <table class='table table-bordered'>
     <thead>
-      <th>ID</th>
       <th>Name</th>
       <th>Max Size</th>
       <th>Resolutions</th>
@@ -14,25 +13,27 @@
     <tbody>
       {% for movie in g.movies %}
         <tr>
-          <td>{{movie.id}}</td>
           <td>{{movie.name}}</td>
+          {% if movie.max_size_mb >= 1024%}
+          <td>{{(movie.max_size_mb/1024) | int}} GB</td>
+          {% else %}
           <td>{{movie.max_size_mb}} MB</td>
+          {% endif %}
           <td>{{movie.resolutions}}</td>
           <td>{{movie.state}}</td>
-          <td><a href='{{url_for("edit_movie",id=movie.id)}}' class='btn btn-primary'>Edit</a>
-            <p></p>
-            <form action="{{ url_for('delete_movie', id=movie.id) }}" method="post">
-              <input class="btn btn-danger" type="submit" value="Delete" onclick="return confirm('Are you sure?');">
-            </form>
+          <td><a href='{{url_for("edit_movie",id=movie.id)}}' class='btn btn-primary'  style="float:left">Edit</a>
             {% if movie.state != 'PAUSED' %}
-            <form action="{{ url_for('pause_movie', id=movie.id) }}" method="post">
+            <form action="{{ url_for('pause_movie', id=movie.id) }}" method="post" style="float:left">
               <input class="btn btn-warning" type="submit" value="Pause">
             </form>
             {% else %}
-            <form action="{{ url_for('resume_movie', id=movie.id) }}" method="post">
+            <form action="{{ url_for('resume_movie', id=movie.id) }}" method="post"  style="float:left">
               <input class="btn btn-success" type="submit" value="Resume">
             </form>
             {% endif %}
+            <form action="{{ url_for('delete_movie', id=movie.id) }}" method="post"  style="float:left">
+              <input class="btn btn-danger" type="submit" value="Delete" onclick="return confirm('Are you sure?');">
+            </form>
         </td>
         </tr>
       {%endfor%}
