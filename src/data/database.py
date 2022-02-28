@@ -58,7 +58,7 @@ class TBDatabase:
         sql = f"""CREATE TABLE IF NOT EXISTS tv_series (
             "id"	INTEGER PRIMARY KEY AUTOINCREMENT,
             "name" TEXT UNIQUE NOT NULL,
-            "max_season_size_mb" INTEGER NOT NULL,
+            "max_episode_size_mb" INTEGER NOT NULL,
             "resolutions"	TEXT NOT NULL,
             "state" TEXT NOT NULL DEFAULT '{self.states.SEARCHING}'
         )
@@ -70,6 +70,7 @@ class TBDatabase:
             "id"	INTEGER PRIMARY KEY AUTOINCREMENT,
             "series_id" INTEGER,
             "season_number" INTEGER NOT NULL,
+            "season_number_episodes" INTEGER NOT NULL,
             "state" TEXT NOT NULL DEFAULT '{self.states.SEARCHING}',
             "hash" TEXT,
             FOREIGN KEY(series_id) REFERENCES tv_series(id),
@@ -83,8 +84,10 @@ class TBDatabase:
             SELECT 
                 tv_series.id as series_id,
                 tv_series.name as series_name,
+                tv_series.state as series_state,
                 tv_series_seasons.id as season_id,
                 tv_series_seasons.season_number as season_number,
+                tv_series_seasons.season_number_episodes as season_number_episodes,
                 tv_series_seasons.state as season_state,
                 tv_series_seasons.hash as season_hash
             FROM tv_series
@@ -234,26 +237,26 @@ class TBDatabase:
         )
         self.connection.commit()
 
-    def add_series(self, name: str, max_season_size_mb: int, resolutions: str) -> None:
+    def add_series(self, name: str, max_episode_size_mb: int, resolutions: str) -> None:
         """Adds a tv series to the database
 
         Args:
             name (str): the tv seties name
-            max_season_size_mb (int): the  max size of an episode
+            max_episode_size_mb (int): the  max size of an episode
             resolutions (str): the desired resolutions
         """
         cur = self.connection.cursor()
         cur.execute(
             """
-                INSERT INTO tv_series(name,max_season_size_mb,resolutions)
+                INSERT INTO tv_series(name,max_episode_size_mb,resolutions)
                 VALUES(?,?,?)
                 """,
-            (name, max_season_size_mb, resolutions),
+            (name, max_episode_size_mb, resolutions),
         )
         self.connection.commit()
     
 
-    def add_series_season(self, series_id: str, season_number: str):
+    def add_series_season(self, series_id: str, season_number: str, season_number_episodes: int):
         """Add series season
 
         Args:
@@ -263,10 +266,10 @@ class TBDatabase:
         cur = self.connection.cursor()
         cur.execute(
             """
-                INSERT INTO tv_series_seasons(series_id,season_number)
-                VALUES(?,?)
+                INSERT INTO tv_series_seasons(series_id,season_number, season_number_episodes)
+                VALUES(?,?,?)
                 """,
-            (series_id, season_number),
+            (series_id, season_number, season_number_episodes),
         )
         self.connection.commit()
 
@@ -314,7 +317,7 @@ class TBDatabase:
             Exception: if the kwargs is empty or none or if the key arguments don't correspond to
             a database column
         """
-        tv_series_table_columns = ["name", "max_season_size_mb", "resolutions", "state"]
+        tv_series_table_columns = ["name", "max_episode_size_mb", "resolutions", "state"]
         self.connection.row_factory = dict_factory
         cur = self.connection.cursor()
         columns_to_update = ""
@@ -339,7 +342,7 @@ class TBDatabase:
         self.connection.commit()
 
     def update_series_season(self, id, **kwargs: dict) -> None:
-        tv_series_season_table_columns = [ "season_number", "state", "hash"]
+        tv_series_season_table_columns = [ "season_number", "season_number_episodes", "state", "hash"]
         self.connection.row_factory = dict_factory
         cur = self.connection.cursor()
         columns_to_update = ""

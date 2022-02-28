@@ -174,23 +174,23 @@ class Visuals:
         g.id = id
         if request.method == "POST":
             name = request.form["name"]
-            max_season_size_mb = request.form.get("max_season_size_mb", type=int)
+            max_episode_size_mb = request.form.get("max_episode_size_mb", type=int)
             resolutions = request.form["resolutions"]
             valid_input = self.validate_movie_fields(
-                name, max_season_size_mb, resolutions
+                name, max_episode_size_mb, resolutions
             )
             if valid_input:
                 db.update_series(
                     id=id,
                     name=name,
-                    max_season_size_mb=max_season_size_mb,
+                    max_episode_size_mb=max_episode_size_mb,
                     resolutions=resolutions,
                 )
                 flash("Series Updated", "success")
                 return redirect(url_for("tv_series"))
         data = db.get_series(id)
         g.name = data["name"]
-        g.max_season_size_mb = data["max_season_size_mb"]
+        g.max_episode_size_mb = data["max_episode_size_mb"]
         g.resolutions = data["resolutions"]
         g.resolution_options = self.resolution_profiles
         return render_template("edit_series.html")
@@ -260,14 +260,14 @@ class Visuals:
         if request.method == "POST":
             db = self.get_db()
             name = request.form["name"]
-            max_season_size_mb = request.form.get("max_season_size_mb", type=int)
+            max_episode_size_mb = request.form.get("max_episode_size_mb", type=int)
             resolutions = request.form["resolutions"]
             valid_input = self.validate_movie_fields(
-                name, max_season_size_mb, resolutions
+                name, max_episode_size_mb, resolutions
             )
 
             if valid_input:
-                db.add_series(name, max_season_size_mb, resolutions)
+                db.add_series(name, max_episode_size_mb, resolutions)
                 flash("TV Series Added", "success")
                 return redirect(url_for("tv_series"))
 

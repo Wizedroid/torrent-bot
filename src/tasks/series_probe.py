@@ -60,7 +60,7 @@ class TVSeriesProbe:
         for series_row in self.db.get_series_with_state(state=self.db.states.SEARCHING):
             series_id = series_row.get('id')
             series_name = series_row.get('name')
-            series_max_season_size_mb = self.mb_to_bytes(series_row.get("max_season_size_mb"))
+            max_episode_size_bytes = self.mb_to_bytes(series_row.get("max_episode_size_mb"))
             series_resolution_profile = series_row.get("resolutions")
             seasons = self.db.get_tv_series_with_seasons(series_id)
             season_numbers = [season['season_number'] for season in seasons]
@@ -69,7 +69,7 @@ class TVSeriesProbe:
                 # Seach for missing seasons
                 for season in [season_number for season_number in epguide_show_info.keys() if int(season_number) not in season_numbers]:
                     if self.is_season_complete(epguide_show_info[season]):
-                        self.db.add_series_season(series_id, season)
+                        self.db.add_series_season(series_id, season, len(epguide_show_info[season]))
             except HTTPError as error:
                 logging.error(f"Failed to find series {series_name}!")
         
@@ -78,8 +78,9 @@ class TVSeriesProbe:
                 season_state = season['season_state']
                 season_id = season['season_id']
                 season_number = season['season_number']
+                season_number_episodes = season['season_number_episodes']
                 if season_state == self.db.states.SEARCHING:
-                    hash = self.download_full_season(series_name, season_number, series_max_season_size_mb, series_resolution_profile)
+                    hash = self.download_full_season(series_name, season_number, max_episode_size_bytes*season_number_episodes, series_resolution_profile)
                     if hash:
                         self.db.update_series_season(
                             id=season_id,
@@ -113,24 +114,24 @@ class TVSeriesProbe:
         for season in seasons:
             series_id = season.get("series_id")
             season_id = season.get("season_id")
-            state = season.get("state")
-            hash = season.get("hash")
+            season_state = season.get("season_state")
+            season_hash = season.get("hash")
 
             # Do nothing with movies not found or already completed
-            if state in [self.db.states.SEARCHING, self.db.states.COMPLETED]:
+            if season_state in [self.db.states.SEARCHING, self.db.states.COMPLETED]:
                 continue
             
             # Check if the movies should change the state
-            torrents = self.qbit.torrents_info(status_filter=None, hashes=hash)
+            torrents = self.qbit.torrents_info(status_filter=None, hashes=season_hash)
             for torrent in torrents:
                 # Remove the torrent if it is older than the retention period
-                if state == self.db.states.SEEDING: 
+                if season_state == self.db.states.SEEDING: 
                     time_since_added_sec = int(time.time()) - int(torrent["added_on"])
                     if time_since_added_sec > self.retention_preiod_sec:
-                        self.qbit.delete(hash)
+                        self.qbit.delete(season_hash)
                         self.db.update_series_season(season_id, state=self.db.states.COMPLETED)
                 # Change the torrent state if it finished the download and it is now uploading
-                elif state == self.db.states.DOWNLOADING and torrent["state"] == "uploading":
+                elif season_state == self.db.states.DOWNLOADING and torrent["state"] == "uploading":
                     self.db.update_series_season(season_id, state=self.db.states.SEEDING)
 
             # If no torrent were found for the given hash, it means it got deleted by the user

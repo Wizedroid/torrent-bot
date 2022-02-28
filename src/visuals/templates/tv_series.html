@@ -5,7 +5,7 @@
   <table class='table table-bordered'>
     <thead>
       <th>Name</th>
-      <th>Max Size of season</th>
+      <th>Max Size of episode</th>
       <th>Resolutions</th>
       <th>State</th>
       <th>Manage</th>
@@ -14,7 +14,7 @@
       {% for series in g.tv_series %}
         <tr>
           <td>{{series.name}}</td>
-          <td>{{series.max_season_size_mb}} MB</td>
+          <td>{{series.max_episode_size_mb}} MB</td>
           <td>{{series.resolutions}}</td>
           <td>{{series.state}}</td>
           <td>
