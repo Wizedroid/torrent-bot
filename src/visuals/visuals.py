@@ -26,8 +26,8 @@ class Visuals:
         self.app.secret_key = secret_key
         self.app.config["DB"] = database_path
         self.app.teardown_appcontext(self.close_db)
-        self.app.add_url_rule("/", "index", self.index)
-        self.app.add_url_rule("/index", "index", self.index)
+        self.app.add_url_rule("/", "index", self.index, methods=['GET', 'POST'])
+        self.app.add_url_rule("/index", "index", self.index, methods=['GET', 'POST'])
         self.app.add_url_rule("/movies", "movies", self.movies)
         self.app.add_url_rule("/tv_series", "tv_series", self.tv_series)
         self.app.add_url_rule(
@@ -88,6 +88,12 @@ class Visuals:
             "resume_season",
             self.resume_season,
             methods=["POST", "DELETE"],
+        )
+        self.app.add_url_rule(
+            "/search",
+            "search",
+            self.search,
+            methods=["POST", "GET"],
         )
         self.resolution_profiles = resolution_profiles
 
@@ -302,6 +308,10 @@ class Visuals:
 
         g.resolution_options = self.resolution_profiles
         return render_template("add_series.html")
+    
+    def search(self):
+        print(request.form.get('search'))
+        return render_template('search.html')
 
     def get_db(self) -> TBDatabase:
         """Get database
