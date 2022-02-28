@@ -272,7 +272,7 @@ class Visuals:
             name = request.form["name"]
             max_size_mb = request.form.get("max_size_mb", type=int)
             resolutions = request.form["resolutions"]
-            valid_input = self.validate_movie_fields(name, max_size_mb, resolutions)
+            valid_input = self.validate_movie_fields(max_size_mb, resolutions, name)
 
             if valid_input:
                 db.add_movie(name, max_size_mb, resolutions)
@@ -293,9 +293,7 @@ class Visuals:
             name = request.form["name"]
             max_episode_size_mb = request.form.get("max_episode_size_mb", type=int)
             resolutions = request.form["resolutions"]
-            valid_input = self.validate_movie_fields(
-                name, max_episode_size_mb, resolutions
-            )
+            valid_input = self.validate_movie_fields(max_episode_size_mb, resolutions, name)
 
             if valid_input:
                 db.add_series(name, max_episode_size_mb, resolutions)

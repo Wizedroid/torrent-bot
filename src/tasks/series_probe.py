@@ -111,15 +111,25 @@ class TVSeriesProbe:
         """Updates the database state to reflect the current downloads
         """
         #(@TODO !refractor this method and clean!)
+        
+
+        # Remove all torrents for deleted series
+        series = self.db.get_series_with_state(self.db.states.DELETING)
+        for show in series:
+            seasons = self.db.get_tv_series_with_seasons(show['id'])
+            for season in seasons:
+                self.qbit.delete(season['season_hash'])
+            self.db.delete_series(show['id'])
 
         seasons = self.db.get_all_series_with_seasons()
         for season in seasons:
             series_id = season.get("series_id")
             series_state = season.get('series_state')
 
-            # Update series state 
             series_season_states = self.db.get_season_states(series_id=series_id)
-            if self.db.states.DOWNLOADING in series_season_states and series_state!=self.db.states.DOWNLOADING:
+            if self.db.states.SEARCHING in series_season_states and series_state!=self.db.states.SEARCHING:
+                self.db.update_series(series_id, state=self.db.states.SEARCHING)
+            elif self.db.states.DOWNLOADING in series_season_states and series_state!=self.db.states.DOWNLOADING:
                 self.db.update_series(series_id, state=self.db.states.DOWNLOADING)
             if len(series_season_states)==1 and not series_state in series_season_states:
                 if self.db.states.PAUSED in series_season_states:
@@ -158,13 +168,7 @@ class TVSeriesProbe:
                 elif season_state == self.db.states.PAUSED and not 'paused' in torrent["state"].lower():
                     self.qbit.stop(season_hash)
     
-        # Remove all torrents for deleted series
-        series = self.db.get_series_with_state(self.db.states.DELETING)
-        for show in series:
-            seasons = self.db.get_tv_series_with_seasons(show['id'])
-            for season in seasons:
-                self.qbit.delete(season['season_hash'])
-            self.db.delete_series(show['id'])
+
 
     def shutdown(self) -> None:
         """Close resources"""
