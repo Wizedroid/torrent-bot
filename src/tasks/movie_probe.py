@@ -87,6 +87,10 @@ class MovieProbe:
             # Check if the movies should change the state
             torrents = self.qbit.torrents_info(status_filter=None, hashes=hash)
             for torrent in torrents:
+                # State changed from paused,  therefore reusme
+                if state != self.db.states.PAUSED and 'paused' in torrent["state"].lower():
+                    self.qbit.resume(hash)
+
                 # Remove the torrent if it is older than the retention period
                 if state == self.db.states.SEEDING: 
                     time_since_added_sec = int(time.time()) - int(torrent["added_on"])
@@ -96,10 +100,14 @@ class MovieProbe:
                 # Change the torrent state if it finished the download and it is now uploading
                 elif state == self.db.states.DOWNLOADING and torrent["state"] == "uploading":
                     self.db.update_movie(id, state=self.db.states.SEEDING)
+                # Stop download for torrents stopped
+                elif state == self.db.states.PAUSED:
+                    self.qbit.stop(hash)
+                # Remove torrent marked for removing
+                elif state == self.db.states.DELETING:
+                    self.qbit.delete(hash)
+                    self.db.delete_movie(id)
 
-            # If no torrent were found for the given hash, it means it got deleted by the user
-            if not torrents:  
-                self.db.delete_movie(id)
 
     def shutdown(self) -> None:
         """Close resources"""

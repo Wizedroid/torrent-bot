@@ -112,10 +112,9 @@ class TVSeriesProbe:
         """
         seasons = self.db.get_all_series_with_seasons()
         for season in seasons:
-            series_id = season.get("series_id")
             season_id = season.get("season_id")
             season_state = season.get("season_state")
-            season_hash = season.get("hash")
+            season_hash = season.get("season_hash")
 
             # Do nothing with movies not found or already completed
             if season_state in [self.db.states.SEARCHING, self.db.states.COMPLETED]:
@@ -124,6 +123,10 @@ class TVSeriesProbe:
             # Check if the movies should change the state
             torrents = self.qbit.torrents_info(status_filter=None, hashes=season_hash)
             for torrent in torrents:
+                # State changed from paused,  therefore reusme
+                if season_state != self.db.states.PAUSED and 'paused' in torrent["state"].lower():
+                    self.qbit.resume(season_hash)
+                
                 # Remove the torrent if it is older than the retention period
                 if season_state == self.db.states.SEEDING: 
                     time_since_added_sec = int(time.time()) - int(torrent["added_on"])
@@ -133,10 +136,17 @@ class TVSeriesProbe:
                 # Change the torrent state if it finished the download and it is now uploading
                 elif season_state == self.db.states.DOWNLOADING and torrent["state"] == "uploading":
                     self.db.update_series_season(season_id, state=self.db.states.SEEDING)
-
-            # If no torrent were found for the given hash, it means it got deleted by the user
-            if not torrents:  
-                self.db.delete_series_season(series_id=series_id, season_id=season_id)
+                # Stop download for torrents stopped
+                elif season_state == self.db.states.PAUSED and not 'paused' in torrent["state"].lower():
+                    self.qbit.stop(season_hash)
+        
+        # Remove all torrents for deleted series
+        series = self.db.get_series_with_state(self.db.states.DELETING)
+        for show in series:
+            seasons = self.db.get_tv_series_with_seasons(show['id'])
+            for season in seasons:
+                self.qbit.delete(season['season_hash'])
+            self.db.delete_series(show['id'])
 
     def shutdown(self) -> None:
         """Close resources"""

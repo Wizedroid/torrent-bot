@@ -1,3 +1,4 @@
+from re import T
 import qbittorrentapi
 
 
@@ -53,8 +54,19 @@ class QbittorrentClient:
             torrent_hashes (list): the hashes of the torrents to delete
         """
         self.qbt_client.torrents_delete(torrent_hashes=torrent_hashes)
+    
+    def stop(self, torrent_hashes: list) -> None:
+        """Pauses the torrents given by the hash list
 
+        Args:
+            torrent_hashes (list): the hashes of the torrents to pause
+        """
+        self.qbt_client.torrents_pause(torrent_hashes=torrent_hashes)
+    
+    def resume(self, torrent_hashes: list) -> None:
+        """Resumes the torrents given by the hash list
 
-qbit = QbittorrentClient()
-# qbit.download('magnet:?xt=urn:btih:9BFAB920305925F9954D8C4B9DEDCD4C6B12FFEA&dn=Gladiator+(2000)+%5BEXTENDED%5D+1080p+BrRip+x264+-+1.6GB+-+YIFY&tr=udp%3A%2F%2Ftracker.opentrackr.org%3A1337%2Fannounce&tr=udp%3A%2F%2Ftracker.coppersurfer.tk%3A6969%2Fannounce&tr=udp%3A%2F%2F9.rarbg.to%3A2710%2Fannounce&tr=udp%3A%2F%2Ftracker.internetwarriors.net%3A1337%2Fannounce&tr=udp%3A%2F%2Ftracker.cyberia.is%3A6969%2Fannounce&tr=udp%3A%2F%2Fexodus.desync.com%3A6969%2Fannounce&tr=udp%3A%2F%2Fexplodie.org%3A6969%2Fannounce&tr=http%3A%2F%2Ftracker1.itzmx.com%3A8080%2Fannounce&tr=udp%3A%2F%2Ftracker.tiny-vps.com%3A6969%2Fannounce&tr=udp%3A%2F%2Fopen.stealth.si%3A80%2Fannounce', save_path='/Users/pedro/Downloads')
-# print(qbit.torrents_info('active'))
+        Args:
+            torrent_hashes (list): the hashes of the torrents to resume
+        """
+        self.qbt_client.torrents_resume(torrent_hashes)

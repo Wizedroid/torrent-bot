@@ -7,6 +7,8 @@ class TorrentState:
     DOWNLOADING = "DOWNLOADING"  # Currently being downloading
     SEEDING = "SEEDING"  # Currently uploading
     COMPLETED = "COMPLETED"  # Removed from seeding
+    DELETING  = "DELETING" # Torrent marked for deletion
+    PAUSED = "PAUSED" # Download stopped
 
     @staticmethod
     def get_states() -> list:
@@ -14,7 +16,9 @@ class TorrentState:
             TorrentState.SEARCHING,
             TorrentState.DOWNLOADING,
             TorrentState.SEEDING,
-            TorrentState.COMPLETED
+            TorrentState.COMPLETED,
+            TorrentState.DELETING,
+            TorrentState.PAUSED
         ]
 
 
@@ -214,9 +218,9 @@ class TBDatabase:
         cur.execute("DELETE FROM tv_series WHERE id=?", (id,))
         self.connection.commit()
     
-    def delete_series_season(self, series_id: str, season_id: str):
+    def delete_season(self, id: str):
         cur = self.connection.cursor()
-        cur.execute("DELETE FROM tv_series_seasons WHERE series_id=? AND id=?", (series_id,season_id))
+        cur.execute("DELETE FROM tv_series_seasons WHERE id=?", (id,))
         self.connection.commit()
 
     def add_movie(self, name: str, max_size_mb: int, resolutions: str) -> None:

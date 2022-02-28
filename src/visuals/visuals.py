@@ -1,12 +1,9 @@
-from audioop import maxpp
-from re import S
 from sqlite3.dbapi2 import Connection, Error
 import threading
 from flask import Flask, render_template, request, redirect, url_for, flash
 from flask import current_app, g
 from data import TBDatabase
 import sys
-import sqlite3
 
 from data.database import TBDatabase
 
@@ -63,15 +60,33 @@ class Visuals:
             methods=["POST", "DELETE"],
         )
         self.app.add_url_rule(
+            "/pause_movie/<string:id>",
+            "pause_movie",
+            self.pause_movie,
+            methods=["POST", "DELETE"],
+        )
+        self.app.add_url_rule(
+            "/resume_movie/<string:id>",
+            "resume_movie",
+            self.resume_movie,
+            methods=["POST", "DELETE"],
+        )
+        self.app.add_url_rule(
             "/delete_series/<string:id>",
             "delete_series",
             self.delete_series,
             methods=["POST", "DELETE"],
         )
         self.app.add_url_rule(
-            "/delete_series_season/<string:series_id>/<string:season_id>",
-            "delete_series_season",
-            self.delete_series_season,
+            "/pause_season/<string:id>/<string:series_id>",
+            "pause_season",
+            self.pause_season,
+            methods=["POST", "DELETE"],
+        )
+        self.app.add_url_rule(
+            "/resume_season/<string:id>/<string:series_id>",
+            "resume_season",
+            self.resume_season,
             methods=["POST", "DELETE"],
         )
         self.app.add_url_rule(
@@ -205,8 +220,29 @@ class Visuals:
             str: movies template page
         """
         db = self.get_db()
-        db.delete_movie(id)
-        flash("Movie Deleted", "success")
+        db.update_movie(id, state=db.states.DELETING)
+        flash("Movie Marked for deletion!", "success")
+        return redirect(url_for("movies"))
+    
+    def pause_movie(self, id: str) -> str:
+        """Pause a movie
+
+        Args:
+            id (str): the movie id to pause
+
+        Returns:
+            str:  movies template page
+        """
+        db = self.get_db()
+        db.update_movie(id, state=db.states.PAUSED)
+        flash("Movie Paused", "success")
+        return redirect(url_for("movies"))
+
+    
+    def resume_movie(self, id:str) -> str:
+        db = self.get_db()
+        db.update_movie(id, state=db.states.SEARCHING)
+        flash("Movie Download Resumed", "success")
         return redirect(url_for("movies"))
 
     def delete_series(self, id: str) -> str:
@@ -219,16 +255,21 @@ class Visuals:
             str: movies template page
         """
         db = self.get_db()
-        db.delete_series(id)
-        flash("Tv Series Deleted", "success")
+        db.update_series(id=id, state=db.states.DELETING)
+        flash("Tv Series Marked for deletion", "success")
         return redirect(url_for("tv_series"))
     
-    def delete_series_season(self, series_id, season_id):
+    def pause_season(self, id: str, series_id: str):
         db = self.get_db()
-        db.delete_series_season(series_id, season_id)
-        flash("Tv Season deleted", "success")
+        db.update_series_season(id, state=db.states.PAUSED)
+        flash("Tv Season Paused", "success")
         return redirect(url_for("tv_series_seasons",id=series_id))
 
+    def resume_season(self, id: str, series_id: str):
+        db = self.get_db()
+        db.update_series_season(id, state=db.states.SEARCHING)
+        flash("Tv Season download resumed", "success")
+        return redirect(url_for("tv_series_seasons", id=series_id))
 
     def add_movie(self) -> str:
         """Add movie endpoint
