@@ -152,14 +152,12 @@ class Visuals:
         db = self.get_db()
         g.id = id
         if request.method == "POST":
-            name = request.form["name"]
             max_size_mb = request.form.get("max_size_mb", type=int)
             resolutions = request.form["resolutions"]
-            valid_input = self.validate_movie_fields(name, max_size_mb, resolutions)
+            valid_input = self.validate_movie_fields(max_size_mb, resolutions)
             if valid_input:
                 db.update_movie(
                     id=id,
-                    name=name,
                     max_size_mb=max_size_mb,
                     resolutions=resolutions,
                     state=db.states.SEARCHING,
@@ -182,16 +180,14 @@ class Visuals:
         db = self.get_db()
         g.id = id
         if request.method == "POST":
-            name = request.form["name"]
             max_episode_size_mb = request.form.get("max_episode_size_mb", type=int)
             resolutions = request.form["resolutions"]
             valid_input = self.validate_movie_fields(
-                name, max_episode_size_mb, resolutions
+                max_episode_size_mb, resolutions
             )
             if valid_input:
                 db.update_series(
                     id=id,
-                    name=name,
                     max_episode_size_mb=max_episode_size_mb,
                     resolutions=resolutions,
                 )
@@ -331,7 +327,7 @@ class Visuals:
         if db is not None:
             db.close()
 
-    def validate_movie_fields(self, name: str, max_size_mb: int, resolutions: set):
+    def validate_movie_fields(self, max_size_mb: int, resolutions: set, name: str = None):
         """Validates if the fields: name, max_size_mb and resolutions
         have the proper valyes.
 
@@ -345,7 +341,7 @@ class Visuals:
         """
         valid_input = True
         # Movie name
-        if len(name) < 3:
+        if name and len(name) < 3:
             valid_input = False
             flash("The name must have at least 3 characters", "danger")
 
