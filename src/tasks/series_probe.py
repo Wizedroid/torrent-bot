@@ -64,11 +64,14 @@ class TVSeriesProbe:
             series_resolution_profile = series_row.get("resolutions")
             seasons = self.db.get_tv_series_with_seasons(series_id)
             season_numbers = [season['season_number'] for season in seasons]
-            epguide_show_info = self.epguides.get_show_info(series_name)
-            # Seach for missing seasons
-            for season in [season_number for season_number in epguide_show_info.keys() if int(season_number) not in season_numbers]:
-                if self.is_season_complete(epguide_show_info[season]):
-                    self.db.add_series_season(series_id, season)
+            try:
+                epguide_show_info = self.epguides.get_show_info(series_name)
+                # Seach for missing seasons
+                for season in [season_number for season_number in epguide_show_info.keys() if int(season_number) not in season_numbers]:
+                    if self.is_season_complete(epguide_show_info[season]):
+                        self.db.add_series_season(series_id, season)
+            except HTTPError as error:
+                logging.error(f"Failed to find series {series_name}!")
         
             # Download full seasons (@TODO support for individual episodes)
             for season in seasons:
