@@ -60,12 +60,17 @@ class TorrentBot:
         """
         logging.info("Starting visuals")
         self.visuals.start()
+        sleepcount = 5
         while self.running:
-            logging.debug("Probing...")
-            self.movies_probe.start()
-            self.series_probe.start()
-            logging.debug(f"Going to sleep...")
-            time.sleep(5)
+            if sleepcount == 5:
+                logging.debug("Probing...")
+                self.movies_probe.start()
+                self.series_probe.start()
+                logging.debug(f"Going to sleep...")
+                sleepcount = 0
+            else:
+                time.sleep(1)
+                sleepcount+=1
 
         logging.info(f"Shuting down..")
         self.movies_probe.shutdown()
