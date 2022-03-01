@@ -55,7 +55,7 @@ class MovieProbe:
         for movie_row in self.db.get_movies_with_state(state=self.db.states.SEARCHING):
             jackett_result = self.jackett.search_movies(
                 name=movie_row.get("name"),
-                resolution_profile=movie_row.get("resolutions"),
+                resolution_profile=set(movie_row.get("resolutions").split(',')),
                 max_size_bytes=self.mb_to_bytes(movie_row.get("max_size_mb")),
                 min_number_seeds=2,
             )
@@ -82,6 +82,11 @@ class MovieProbe:
 
             # Do nothing with movies not found or already completed
             if state in [self.db.states.SEARCHING, self.db.states.COMPLETED]:
+                continue
+
+            # Catch movies without hashes
+            if not hash:
+                self.db.delete_movie(id)
                 continue
             
             # Check if the movies should change the state

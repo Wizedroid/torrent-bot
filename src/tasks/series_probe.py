@@ -61,7 +61,7 @@ class TVSeriesProbe:
             series_id = series_row.get('id')
             series_name = series_row.get('name')
             max_episode_size_bytes = self.mb_to_bytes(series_row.get("max_episode_size_mb"))
-            series_resolution_profile = series_row.get("resolutions")
+            series_resolution_profile = set(series_row.get("resolutions").split(','))
             seasons = self.db.get_tv_series_with_seasons(series_id)
             season_numbers = [season['season_number'] for season in seasons]
             try:

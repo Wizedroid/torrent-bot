@@ -3,19 +3,23 @@
   <h3 class='text-center text-muted mb-3'>Search Results</h3>
   <div class="text-center">
     {% for entry in g.results %}
-        {{entry['title']}} ({{entry['kind']}})
-        <p>
-        <img src="{{entry['full-size cover url']}} alt="{{entry['title']}}" width="270" height="400"  class="img-fluid" alt="Responsive image">
-        {% if 'movie' in entry['kind'] %}
-        <form action="{{ url_for('add_movie') }}" method="get">
-            <input type='hidden' name='name' required class='form-control' value="{{entry['title']}}" >
-            <input class="btn btn-outline-success" type="submit" value="ADD">
-        </form>
-        {% elif  'series' in entry['kind'] %}
-        <form action="{{ url_for('add_series') }}" method="get">
-            <input type='hidden' name='name' required class='form-control' value="{{entry['title']}}">
-            <input class="btn btn-outline-success" type="submit" value="ADD">
-        </form>
+        {% if  'movie' in entry['kind'] or 'series' in entry['kind']%}
+            {{entry['title']}} ({{entry['kind']}})
+            <p>
+            <img src="{{entry['full-size cover url']}} alt="{{entry['title']}}" width="270" height="400"  class="img-fluid" alt="Responsive image">
+            <p>
+            {% if 'movie' in entry['kind'] %}
+            <form action="{{ url_for('add_movie') }}" method="get">
+                <input type='hidden' name='name' required class='form-control' value="{{entry['title']}}" >
+                <input class="btn btn-outline-success" type="submit" value="ADD">
+            </form>
+            {% elif  'series' in entry['kind'] %}
+            <form action="{{ url_for('add_series') }}" method="get">
+                <input type='hidden' name='name' required class='form-control' value="{{entry['title']}}">
+                <input class="btn btn-outline-success" type="submit" value="ADD">
+            </form>
+            {% endif %}
+            </p>
         {% endif %}
     {%endfor%}
     </div>
