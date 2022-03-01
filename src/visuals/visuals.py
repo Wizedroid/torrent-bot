@@ -3,6 +3,7 @@ import threading
 from flask import Flask, render_template, request, redirect, url_for, flash
 from flask import current_app, g
 from data import TBDatabase
+from tools import IMDBFinder, imdb_finder
 import sys
 
 from data.database import TBDatabase
@@ -26,8 +27,8 @@ class Visuals:
         self.app.secret_key = secret_key
         self.app.config["DB"] = database_path
         self.app.teardown_appcontext(self.close_db)
-        self.app.add_url_rule("/", "index", self.index, methods=['GET', 'POST'])
-        self.app.add_url_rule("/index", "index", self.index, methods=['GET', 'POST'])
+        self.app.add_url_rule("/", "index", self.index)
+        self.app.add_url_rule("/index", "index", self.index)
         self.app.add_url_rule("/movies", "movies", self.movies)
         self.app.add_url_rule("/tv_series", "tv_series", self.tv_series)
         self.app.add_url_rule(
@@ -92,10 +93,10 @@ class Visuals:
         self.app.add_url_rule(
             "/search",
             "search",
-            self.search,
-            methods=["POST", "GET"],
+            self.search
         )
         self.resolution_profiles = resolution_profiles
+        self.imdb_finder = IMDBFinder()
 
     def start(self) -> None:
         """Start the frontend
@@ -284,7 +285,7 @@ class Visuals:
                 db.add_movie(name, max_size_mb, resolutions)
                 flash("Movie Added", "success")
                 return redirect(url_for("movies"))
-
+        g.name = request.args.get('name', default="")
         g.resolution_options = self.resolution_profiles
         return render_template("add_movie.html")
 
@@ -306,11 +307,13 @@ class Visuals:
                 flash("TV Series Added", "success")
                 return redirect(url_for("tv_series"))
 
+        g.name = request.args.get('name', default="")
         g.resolution_options = self.resolution_profiles
         return render_template("add_series.html")
     
     def search(self):
-        print(request.form.get('search'))
+        search_query = request.args.get('search')
+        g.results = self.imdb_finder.search(search_query)
         return render_template('search.html')
 
     def get_db(self) -> TBDatabase:
