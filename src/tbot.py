@@ -3,14 +3,19 @@ import time
 import signal
 from utils import config
 from data import TBDatabase
-from tasks import MovieProbe
+from probes import MovieProbe
 from visuals import Visuals
-from tasks import TVSeriesProbe
+from probes import TVSeriesProbe
 
 
 logging.basicConfig(level=logging.INFO)
 
+
 def main():
+    """
+    Main function for torrent bot.
+    Used to load the initial configuration, create the database and start the torrent bot.
+    """
     logging.info("Loading configurations")
     config.load_config(config.CONFIG_PATH)
 
@@ -25,30 +30,18 @@ def main():
 
 
 class TorrentBot:
-    """Torrent bot"""
+    """Torrent bot.
+    The bot has probes that are periodically called for searching movies and tv series which were previously added to a database. 
+    These probes are also responsible for updating the database so that it reflects the latest findings, downloads, uploads or deleted torrents.
+
+    In addition to the probes, the torrent bot also initializes a frontend (called visuals), which will be listening on the configured
+    host and port for the frontend.
+    """
 
     def __init__(self) -> None:
-        self.visuals = Visuals(
-            config.DB_PATH, config.frontend.secret_key, config.RES_PROFILES
-        )
-        self.movies_probe = MovieProbe(
-            config.jackett.api_key,
-            config.jackett.api_url,
-            config.qbit.hostname,
-            config.qbit.port,
-            config.DB_PATH,
-            config.movies.directory,
-            config.movies.rentention_period_sec,
-        )
-        self.series_probe = TVSeriesProbe(
-            config.jackett.api_key,
-            config.jackett.api_url,
-            config.qbit.hostname,
-            config.qbit.port,
-            config.DB_PATH,
-            config.series.directory,
-            config.series.rentention_period_sec,
-        )
+        self.visuals = Visuals.new(config)
+        self.movies_probe = MovieProbe.new(config)
+        self.series_probe = TVSeriesProbe.new(config)
         self.running = True
         signal.signal(signal.SIGINT, self.exit_gracefully)
         signal.signal(signal.SIGTERM, self.exit_gracefully)
@@ -70,13 +63,13 @@ class TorrentBot:
                 sleepcount = 0
             else:
                 time.sleep(1)
-                sleepcount+=1
+                sleepcount += 1
 
         logging.info(f"Shuting down..")
         self.movies_probe.shutdown()
-    
+
     def exit_gracefully(self, *args) -> None:
-        """Changed the bot running flag to False
+        """Change the bot running flag to False
         """
         self.running = False
 

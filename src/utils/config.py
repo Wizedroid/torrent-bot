@@ -22,7 +22,7 @@ _jackett = namedtuple("jackett", ["api_key", "api_url"])
 _qbit = namedtuple("qbit", ["hostname", "port"])
 _movies = namedtuple("movies", ['directory', 'rentention_period_sec'])
 _series = namedtuple("series", ['directory', 'rentention_period_sec'])
-_frontend = namedtuple("frontend", ['secret_key'])
+_frontend = namedtuple("frontend", ['secret_key', 'hostname', 'port'])
 
 def load_config(path):
     global jackett, qbit, movies, series, frontend
@@ -37,6 +37,8 @@ def load_config(path):
                              rentention_period_sec=configuration['movies']['retention_period_sec'])
             series = _series(directory=configuration['series']['directory'],
                              rentention_period_sec=configuration['series']['retention_period_sec'])
-            frontend = _frontend(secret_key=configuration['frontend']['secret_key'])
+            frontend = _frontend(secret_key=configuration['frontend'].get('secret_key', 'my-test-key'),
+                                    hostname=configuration['frontend'].get('hostname', 'localhost'),
+                                    port=configuration['frontend'].get('port', 5000))
     else:
         print(f"Config file not found. ({path})!")

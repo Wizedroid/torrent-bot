@@ -6,6 +6,7 @@ from tools import JackettClient
 from tools import QbittorrentClient
 from tools import EPGuidesClient
 from data import TBDatabase
+from utils import config
 
 class TVSeriesProbe:
     """
@@ -45,6 +46,26 @@ class TVSeriesProbe:
         self.epguides = EPGuidesClient()
         self.series_storage_dir = series_storage_dir
         self.retention_preiod_sec = retention_preiod_sec
+
+    @staticmethod
+    def new(config: config):
+        """Create a new tv series probe directly from the config
+
+        Args:
+            config (config): the configuration parameters for the application
+
+        Returns:
+            MovieProbe: The tv series probe
+        """
+        return TVSeriesProbe(
+            config.jackett.api_key,
+            config.jackett.api_url,
+            config.qbit.hostname,
+            config.qbit.port,
+            config.DB_PATH,
+            config.series.directory,
+            config.series.rentention_period_sec,
+        )
 
     def start(self) -> None:
         """Starts the probe which initiates the search, download and update

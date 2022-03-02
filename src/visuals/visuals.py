@@ -5,9 +5,8 @@ from flask import current_app, g
 from data import TBDatabase
 from tools import IMDBFinder, imdb_finder
 import sys
-
 from data.database import TBDatabase
-
+from utils import config
 
 class Visuals:
     """Torrent Bot Visuals using Flask's framework.
@@ -22,7 +21,7 @@ class Visuals:
         set of allowed resolutions
     """
 
-    def __init__(self, database_path: str, secret_key: str, resolution_profiles: set):
+    def __init__(self, database_path: str, secret_key: str, resolution_profiles: set, hostname: str, port: int):
         self.app = Flask(__name__)
         self.app.secret_key = secret_key
         self.app.config["DB"] = database_path
@@ -97,6 +96,22 @@ class Visuals:
         )
         self.resolution_profiles = resolution_profiles
         self.imdb_finder = IMDBFinder()
+        self.hostname = hostname
+        self.port = port
+    
+    @staticmethod
+    def new(config: config):
+        """Create a new Visuals object directly from the config
+
+        Args:
+            config (config): the configuration parameters for the application
+
+        Returns:
+            MovieProbe: The visuals object
+        """
+        return Visuals(
+            config.DB_PATH, config.frontend.secret_key, config.RES_PROFILES, config.frontend.hostname, config.frontend.port
+        )
 
     def start(self) -> None:
         """Start the frontend
@@ -105,7 +120,7 @@ class Visuals:
            None
         """
         thread = threading.Thread(
-            target=lambda: self.app.run(debug=True, use_reloader=False)
+            target=lambda: self.app.run(debug=True, use_reloader=False, host=self.hostname, port=self.port)
         )
         thread.daemon = True
         thread.start()

@@ -1,8 +1,10 @@
+from os import stat
 import time
 import logging
 from tools import JackettClient
 from tools import QbittorrentClient
 from data import TBDatabase
+from utils import config
 
 class MovieProbe:
     """
@@ -41,6 +43,27 @@ class MovieProbe:
         self.db = TBDatabase(data_path)
         self.movies_storage_dir = movies_storage_dir
         self.retention_preiod_sec = retention_preiod_sec
+    
+
+    @staticmethod
+    def new(config: config):
+        """Create a new movies probe directly from the config
+
+        Args:
+            config (config): the configuration parameters for the application
+
+        Returns:
+            MovieProbe: The movie probe
+        """
+        return MovieProbe(
+            config.jackett.api_key,
+            config.jackett.api_url,
+            config.qbit.hostname,
+            config.qbit.port,
+            config.DB_PATH,
+            config.movies.directory,
+            config.movies.rentention_period_sec,
+        )
 
     def start(self) -> None:
         """Starts the probe which initiates the search, download and update
