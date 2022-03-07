@@ -2,7 +2,7 @@ import imdb
 
 
 class IMDBFinder:
-    """_summary_
+    """IMDB Finder
     """
 
     def __init__(self) -> None:
