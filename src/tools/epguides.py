@@ -3,11 +3,21 @@ import requests
 import json
 
 class EPGuidesClient:
+    """Episode guides client
+    """
 
     def __init__(self) -> None:
         self.base_url = "https://epguides.frecar.no"
 
     def get_show_info(self, name: str) -> dict:
+        """Get show details
+
+        Args:
+            name (str): the show name
+
+        Returns:
+            dict: the show details as a json dict
+        """
         encoded_name = EPGuidesClient.encode(name)
         result = requests.get(f"{self.base_url}/show/{encoded_name}")
         result.raise_for_status()
