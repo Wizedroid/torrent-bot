@@ -16,7 +16,7 @@ class QbittorrentClient:
     """
 
     def __init__(self, host: str = "localhost", port: int = 8080) -> None:
-        self.qbt_client = qbittorrentapi.Client(host="localhost", port=8080)
+        self.qbt_client = qbittorrentapi.Client(host=host, port=port)
 
     def download(
         self, magnetic_uri: str, save_path: str, is_paused: bool = False
