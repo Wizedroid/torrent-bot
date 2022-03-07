@@ -72,7 +72,7 @@ class Visuals:
             config (config): the configuration parameters for the application
 
         Returns:
-            MovieProbe: The visuals object
+            Visuals: The visuals object
         """
         return Visuals(
             config.DB_PATH, config.frontend.secret_key, config.RES_PROFILES, config.frontend.hostname, config.frontend.port
@@ -96,7 +96,7 @@ class Visuals:
         """Index endpoint
 
         Returns:
-            str: index.html
+            str: index.html page
         """
         return render_template("index.html")
 
@@ -104,7 +104,7 @@ class Visuals:
         """Movies endpoint
 
         Returns:
-            str: movies.html
+            str: movies.html page
         """
         db = self.get_db()
         g.movies = db.get_all_movies()
@@ -121,29 +121,29 @@ class Visuals:
         return render_template("tv_shows.html")
 
     def tv_show_seasons(self, id) -> str:
-        """TV Shows endpoint
+        """TV Show seaons endpoint
 
         Returns:
-            str: tv_show_seaons.html
+            str: tv_show_seaons.html page
         """
         db = self.get_db()
         g.tv_show_seasons = db.get_tv_show_with_seasons(id)
         if g.tv_show_seasons:
-            g.show_nae = g.tv_show_seasons[0]['show_name']
+            g.show_name = g.tv_show_seasons[0]['show_name']
         return render_template("tv_show_seasons.html")
 
     def edit_movie(self, id) -> str:
         """Edit Movie endpoint
 
         Returns:
-            str: edit_movie.html
+            str: edit_movie.html page or movies.html page in case of a successful update
         """
         db = self.get_db()
         g.id = id
         if request.method == "POST":
             max_size_mb = request.form.get("max_size_mb", type=int)
             resolution_profile = request.form["resolution_profile"]
-            valid_input = self.validate_movie_fields(max_size_mb, resolution_profile)
+            valid_input = self.validate_fields(max_size_mb, resolution_profile)
             if valid_input:
                 db.update_movie(
                     id=id,
@@ -171,9 +171,7 @@ class Visuals:
         if request.method == "POST":
             max_episode_size_mb = request.form.get("max_episode_size_mb", type=int)
             resolution_profile = request.form["resolution_profile"]
-            valid_input = self.validate_movie_fields(
-                max_episode_size_mb, resolution_profile
-            )
+            valid_input = self.validate_fields(max_episode_size_mb, resolution_profile)
             if valid_input:
                 db.update_tv_show(
                     id=id,
@@ -196,7 +194,7 @@ class Visuals:
             id (str): the id of the movie to delete
 
         Returns:
-            str: movies page
+            str: movies.html page
         """
         db = self.get_db()
         db.update_movie(id, state=db.states.DELETING)
@@ -210,7 +208,7 @@ class Visuals:
             id (str): the movie id to pause
 
         Returns:
-            str:  movies page
+            str:  movies.html page
         """
         db = self.get_db()
         db.update_movie(id, state=db.states.PAUSED)
@@ -224,7 +222,7 @@ class Visuals:
             id (str): the movie id
 
         Returns:
-            str: the movies page
+            str: the movies.html page
         """
         db = self.get_db()
         db.update_movie(id, state=db.states.SEARCHING)
@@ -238,7 +236,7 @@ class Visuals:
             id (str): the id of the tv show to delete
 
         Returns:
-            str: tv_shows page
+            str: tv_shows.html page
         """
         db = self.get_db()
         db.update_tv_show(id=id, state=db.states.DELETING)
@@ -246,12 +244,30 @@ class Visuals:
         return redirect(url_for("tv_shows"))
 
     def pause_season(self, id: str, show_id: str):
+        """Pause season endpoint
+
+        Args:
+            id (str): the season id
+            show_id (str): the show id
+
+        Returns:
+            str: tv_show_seasons.html page
+        """
         db = self.get_db()
         db.update_show_season(id, state=db.states.PAUSED)
         flash("Tv Season Paused", "success")
         return redirect(url_for("tv_show_seasons", id=show_id))
 
     def resume_season(self, id: str, show_id: str):
+        """Resume season endpoint
+
+        Args:
+            id (str): the season id
+            show_id (str): the show id
+
+        Returns:
+            str: tv_show_seasons.html page
+        """
         db = self.get_db()
         db.update_show_season(id, state=db.states.SEARCHING)
         flash("Tv Season download resumed", "success")
@@ -261,16 +277,14 @@ class Visuals:
         """Add movie endpoint
 
         Returns:
-            str: add_movie.html template
+            str: add_movie.html page
         """
         if request.method == "POST":
             db = self.get_db()
             name = request.form["name"]
             max_size_mb = request.form.get("max_size_mb", type=int)
             resolution_profile = request.form["resolution_profile"]
-            valid_input = self.validate_movie_fields(
-                max_size_mb, resolution_profile, name)
-
+            valid_input = self.validate_fields(max_size_mb, resolution_profile, name)
             if valid_input:
                 db.add_movie(name, max_size_mb, resolution_profile)
                 flash("Movie Added", "success")
@@ -283,16 +297,14 @@ class Visuals:
         """Add tv show endpoint
 
         Returns:
-            str: add tv show page
+            str: tv_shows.html page
         """
         if request.method == "POST":
             db = self.get_db()
             name = request.form["name"]
-            max_episode_size_mb = request.form.get(
-                "max_episode_size_mb", type=int)
+            max_episode_size_mb = request.form.get("max_episode_size_mb", type=int)
             resolution_profile = request.form["resolution_profile"]
-            valid_input = self.validate_movie_fields(
-                max_episode_size_mb, resolution_profile, name)
+            valid_input = self.validate_fields(max_episode_size_mb, resolution_profile, name)
 
             if valid_input:
                 db.add_tv_show(name, max_episode_size_mb, resolution_profile)
@@ -304,6 +316,11 @@ class Visuals:
         return render_template("add_tv_show.html")
 
     def search(self):
+        """Search shows/movies endpoint
+
+        Returns:
+            str: search.html page
+        """
         search_query = request.args.get('search')
         g.results = self.imdb_finder.search(search_query)
         return render_template('search.html')
@@ -312,7 +329,7 @@ class Visuals:
         """Get database
 
         Returns:
-            [type]: [description]
+            TBDatabase: Torrent Bot Database
         """
         if "db" not in g:
             g.db = TBDatabase(current_app.config["DB"])
@@ -330,7 +347,7 @@ class Visuals:
         if db is not None:
             db.close()
 
-    def validate_movie_fields(self, max_size_mb: int, resolution_profile: set, name: str = None):
+    def validate_fields(self, max_size_mb: int, resolution_profile: set, name: str = None):
         """Validates if the fields: name, max_size_mb and resolution_profile
         have the proper valyes.
 
@@ -368,4 +385,4 @@ if __name__ == "__main__":
         print("Usage: python frontend.py <db_path>", file=sys.stderr)
         exit(0)
 
-    t = TBFrontend(sys.argv[1], "test", {"1080p"})
+    t = Visuals(sys.argv[1], "secret_key", {"1080p"}, "localhost", 5000)
