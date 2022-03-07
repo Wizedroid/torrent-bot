@@ -41,6 +41,16 @@ class IMDBFinder:
         self.update_with_seasons(show)
         return show
 
+    def get_imdbid(self, entry: object) -> str:
+        """Retreive the imdb for the specified entry (movie or show)
+
+        Args:
+            entry (object): the movie or show object
+
+        Returns:
+            str: the imdb id
+        """
+        return self.finder.get_imdbID(movie)
 
 if __name__ == '__main__':
     finder = IMDBFinder()
@@ -48,6 +58,7 @@ if __name__ == '__main__':
     for movie in movies:
         print(movie.get('title'))
         print(movie.get('full-size cover url'))
+        print(finder.get_imdbid(movie))
         if 'series' in movie['kind']:
             finder.update_with_seasons(movie)
             print(f"seasons:{len(movie['episodes'].keys())}")
