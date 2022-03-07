@@ -50,7 +50,7 @@ class IMDBFinder:
         Returns:
             str: the imdb id
         """
-        return self.finder.get_imdbID(movie)
+        return self.finder.get_imdbID(entry)
 
 if __name__ == '__main__':
     finder = IMDBFinder()
