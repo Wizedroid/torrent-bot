@@ -3,6 +3,7 @@ import requests
 import json
 import re
 
+
 class JackettClient:
     """
     A wrapper client for jackett api cals
@@ -11,6 +12,8 @@ class JackettClient:
     ----------
     api_key : str
         the jacket api key
+    api_url : str
+        the jacket api url
 
     """
 
@@ -26,7 +29,7 @@ class JackettClient:
         year: str = None,
         lang: str = None,
         min_number_seeds: int = None
-    ) -> list :
+    ) -> list:
         """Searches Jackett for a movie with the specified characteristics.
 
         Args:
@@ -43,9 +46,9 @@ class JackettClient:
         movies = []
         for res in resolution_profile:
             request_url = f"{self.api_url}/indexers/all/results?"\
-                        f"apikey={self.api_key}&"\
-                        f"query={name}+{res}&"\
-                        f"category=2000"
+                f"apikey={self.api_key}&"\
+                f"query={name}+{res}&"\
+                f"category=2000"
             result = requests.get(request_url)
             result.raise_for_status()
             contents = result.json()
@@ -63,8 +66,7 @@ class JackettClient:
                     if min_number_seeds is not None and seeders < min_number_seeds:
                         continue
                     movies.append(result)
-        return sorted(movies, key = lambda i: i['Seeders'], reverse=True)
-
+        return sorted(movies, key=lambda i: i['Seeders'], reverse=True)
 
     def search_tvseries(
         self,
@@ -74,7 +76,7 @@ class JackettClient:
         max_size_bytes: int = None,
         lang: str = None,
         min_number_seeds: int = None
-    ) -> list :
+    ) -> list:
         """Searches Jackett for a TV Series with the specified characteristics.
 
         Args:
@@ -91,9 +93,9 @@ class JackettClient:
         tv_series = []
         for res in resolution_profile:
             request_url = f"{self.api_url}/indexers/all/results?"\
-                        f"apikey={self.api_key}&"\
-                        f"query={name}+{res}&"\
-                        f"category=5000"
+                f"apikey={self.api_key}&"\
+                f"query={name}+{res}&"\
+                f"category=5000"
             result = requests.get(request_url)
             result.raise_for_status()
             contents = result.json()
@@ -113,4 +115,4 @@ class JackettClient:
                     if re.search(f"(episode|ep|e)[0-9]+", title):
                         continue
                     tv_series.append(result)
-        return sorted(tv_series, key = lambda i: i['Seeders'], reverse=True)
+        return sorted(tv_series, key=lambda i: i['Seeders'], reverse=True)
