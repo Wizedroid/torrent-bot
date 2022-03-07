@@ -5,7 +5,7 @@ from utils import config
 from data import TBDatabase
 from probes import MovieProbe
 from visuals import Visuals
-from probes import TVSeriesProbe
+from probes import TVShowProbe
 
 
 logging.basicConfig(level=logging.INFO)
@@ -41,7 +41,7 @@ class TorrentBot:
     def __init__(self) -> None:
         self.visuals = Visuals.new(config)
         self.movies_probe = MovieProbe.new(config)
-        self.series_probe = TVSeriesProbe.new(config)
+        self.series_probe = TVShowProbe.new(config)
         self.running = True
         signal.signal(signal.SIGINT, self.exit_gracefully)
         signal.signal(signal.SIGTERM, self.exit_gracefully)

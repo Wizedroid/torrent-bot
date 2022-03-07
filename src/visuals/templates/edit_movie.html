@@ -9,10 +9,10 @@
           <input type='text' name='max_size_mb' required class='form-control' value='{{g.max_size_mb}}'>
         </div>
         <div class='form-group'>
-          <span class="input-group-addon">Resolutions</span>
-            <select name="resolutions" class="selectpicker form-control">
+          <span class="input-group-addon">Resolution Profile</span>
+            <select name="resolution_profile" class="selectpicker form-control">
               {% for option in g.resolution_options %}
-                {% if option == g.resolutions %}
+                {% if option == g.resolution_profile %}
                   <option value="{{ option }}" selected>{{ option }} </option>
                 {% else %}
                   <option value="{{ option }}">{{ option }}</option>

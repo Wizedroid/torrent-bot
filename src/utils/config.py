@@ -17,15 +17,15 @@ RES_PROFILES = {
     "720p+web-dl",
 }
 
-jackett, qbit, movies, series, frontend = None, None, None, None, None
+jackett, qbit, movies, shows, frontend = None, None, None, None, None
 _jackett = namedtuple("jackett", ["api_key", "api_url"])
 _qbit = namedtuple("qbit", ["hostname", "port"])
 _movies = namedtuple("movies", ['directory', 'rentention_period_sec'])
-_series = namedtuple("series", ['directory', 'rentention_period_sec'])
+_shows = namedtuple("shows", ['directory', 'rentention_period_sec'])
 _frontend = namedtuple("frontend", ['secret_key', 'hostname', 'port'])
 
 def load_config(path):
-    global jackett, qbit, movies, series, frontend
+    global jackett, qbit, movies, shows, frontend
     if os.path.exists(path):
         with open(path, 'r') as f:
             configuration =  yaml.safe_load(f)
@@ -35,8 +35,8 @@ def load_config(path):
                                port=configuration['qbittorrent']['port'])
             movies = _movies(directory=configuration['movies']['directory'],
                              rentention_period_sec=configuration['movies']['retention_period_sec'])
-            series = _series(directory=configuration['series']['directory'],
-                             rentention_period_sec=configuration['series']['retention_period_sec'])
+            shows = _shows(directory=configuration['shows']['directory'],
+                             rentention_period_sec=configuration['shows']['retention_period_sec'])
             frontend = _frontend(secret_key=configuration['frontend'].get('secret_key', 'my-test-key'),
                                     hostname=configuration['frontend'].get('hostname', 'localhost'),
                                     port=configuration['frontend'].get('port', 5000))

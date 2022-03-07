@@ -1,2 +1,2 @@
 from .movie_probe import MovieProbe
-from .series_probe import TVSeriesProbe
+from .tv_show_probe import TVShowProbe

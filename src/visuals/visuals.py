@@ -8,8 +8,9 @@ import sys
 from data.database import TBDatabase
 from utils import config
 
+
 class Visuals:
-    """Torrent Bot Visuals using Flask's framework.
+    """Torrent Bot Frontent (aka visuals) using Flask's framework.
 
     Attributes
     ----------
@@ -18,10 +19,15 @@ class Visuals:
     secret_key : str
         the the app secret key
     resolution_profiles: set
-        set of allowed resolutions
+        set of allowed resolution_profile
+    hostname: str
+        the listen address for the frontend
+    port: int
+        the listen port for the frontend
     """
 
-    def __init__(self, database_path: str, secret_key: str, resolution_profiles: set, hostname: str, port: int):
+    def __init__(self, database_path: str, secret_key: str,
+                 resolution_profiles: set, hostname: str, port: int):
         self.app = Flask(__name__)
         self.app.secret_key = secret_key
         self.app.config["DB"] = database_path
@@ -29,76 +35,35 @@ class Visuals:
         self.app.add_url_rule("/", "index", self.index)
         self.app.add_url_rule("/index", "index", self.index)
         self.app.add_url_rule("/movies", "movies", self.movies)
-        self.app.add_url_rule("/tv_series", "tv_series", self.tv_series)
-        self.app.add_url_rule(
-            "/tv_series_seasons/<string:id>",
-            "tv_series_seasons",
-            self.tv_series_seasons,
-        )
-        self.app.add_url_rule(
-            "/edit_movie/<string:id>",
-            "edit_movie",
-            self.edit_movie,
-            methods=["POST", "GET"],
-        )
-        self.app.add_url_rule(
-            "/edit_series/<string:id>",
-            "edit_series",
-            self.edit_series,
-            methods=["POST", "GET"],
-        )
-        self.app.add_url_rule(
-            "/add_movie", "add_movie", self.add_movie, methods=["POST", "GET"]
-        )
-        self.app.add_url_rule(
-            "/add_series", "add_series", self.add_series, methods=["POST", "GET"]
-        )
-        self.app.add_url_rule(
-            "/delete_movie/<string:id>",
-            "delete_movie",
-            self.delete_movie,
-            methods=["POST", "DELETE"],
-        )
-        self.app.add_url_rule(
-            "/pause_movie/<string:id>",
-            "pause_movie",
-            self.pause_movie,
-            methods=["POST", "DELETE"],
-        )
-        self.app.add_url_rule(
-            "/resume_movie/<string:id>",
-            "resume_movie",
-            self.resume_movie,
-            methods=["POST", "DELETE"],
-        )
-        self.app.add_url_rule(
-            "/delete_series/<string:id>",
-            "delete_series",
-            self.delete_series,
-            methods=["POST", "DELETE"],
-        )
-        self.app.add_url_rule(
-            "/pause_season/<string:id>/<string:series_id>",
-            "pause_season",
-            self.pause_season,
-            methods=["POST", "DELETE"],
-        )
-        self.app.add_url_rule(
-            "/resume_season/<string:id>/<string:series_id>",
-            "resume_season",
-            self.resume_season,
-            methods=["POST", "DELETE"],
-        )
-        self.app.add_url_rule(
-            "/search",
-            "search",
-            self.search
-        )
+        self.app.add_url_rule("/tv_shows", "tv_shows", self.tv_shows)
+        self.app.add_url_rule("/tv_show_seasons/<string:id>",
+                              "tv_show_seasons", self.tv_show_seasons)
+        self.app.add_url_rule("/edit_movie/<string:id>",
+                              "edit_movie", self.edit_movie, methods=["POST", "GET"])
+        self.app.add_url_rule("/edit_tv_show/<string:id>", "edit_tv_show",
+                              self.edit_tv_show, methods=["POST", "GET"])
+        self.app.add_url_rule("/add_movie", "add_movie",
+                              self.add_movie, methods=["POST", "GET"])
+        self.app.add_url_rule("/add_tv_show", "add_tv_show",
+                              self.add_tv_show, methods=["POST", "GET"])
+        self.app.add_url_rule("/delete_movie/<string:id>", "delete_movie",
+                              self.delete_movie, methods=["POST", "DELETE"])
+        self.app.add_url_rule("/pause_movie/<string:id>", "pause_movie",
+                              self.pause_movie, methods=["POST", "DELETE"])
+        self.app.add_url_rule("/resume_movie/<string:id>", "resume_movie",
+                              self.resume_movie, methods=["POST", "DELETE"])
+        self.app.add_url_rule("/delete_tv_show/<string:id>", "delete_tv_show",
+                              self.delete_tv_show, methods=["POST", "DELETE"])
+        self.app.add_url_rule("/pause_season/<string:id>/<string:show_id>",
+                              "pause_season", self.pause_season, methods=["POST", "DELETE"])
+        self.app.add_url_rule("/resume_season/<string:id>/<string:show_id>",
+                              "resume_season", self.resume_season, methods=["POST", "DELETE"])
+        self.app.add_url_rule("/search", "search", self.search)
         self.resolution_profiles = resolution_profiles
         self.imdb_finder = IMDBFinder()
         self.hostname = hostname
         self.port = port
-    
+
     @staticmethod
     def new(config: config):
         """Create a new Visuals object directly from the config
@@ -119,9 +84,11 @@ class Visuals:
         Returns:
            None
         """
-        thread = threading.Thread(
-            target=lambda: self.app.run(debug=True, use_reloader=False, host=self.hostname, port=self.port)
-        )
+        thread = threading.Thread(target=lambda:
+                                  self.app.run(debug=True,
+                                               use_reloader=False,
+                                               host=self.hostname,
+                                               port=self.port))
         thread.daemon = True
         thread.start()
 
@@ -129,7 +96,7 @@ class Visuals:
         """Index endpoint
 
         Returns:
-            str: index.html template
+            str: index.html
         """
         return render_template("index.html")
 
@@ -137,51 +104,51 @@ class Visuals:
         """Movies endpoint
 
         Returns:
-            str: movies.html template
+            str: movies.html
         """
         db = self.get_db()
         g.movies = db.get_all_movies()
         return render_template("movies.html")
 
-    def tv_series(self) -> str:
-        """TV Series endpoint
+    def tv_shows(self) -> str:
+        """TV Shows endpoint
 
         Returns:
-            str: tv_series.html template
+            str: tv_shows.html page
         """
         db = self.get_db()
-        g.tv_series = db.get_all_series()
-        return render_template("tv_series.html")
+        g.tv_shows = db.get_all_tv_shows()
+        return render_template("tv_shows.html")
 
-    def tv_series_seasons(self, id) -> str:
-        """TV Series endpoint
+    def tv_show_seasons(self, id) -> str:
+        """TV Shows endpoint
 
         Returns:
-            str: tv_series.html template
+            str: tv_show_seaons.html
         """
         db = self.get_db()
-        g.tv_series_seasons = db.get_tv_series_with_seasons(id)
-        if g.tv_series_seasons:
-            g.series_name = g.tv_series_seasons[0]['series_name']
-        return render_template("tv_series_seasons.html")
+        g.tv_show_seasons = db.get_tv_show_with_seasons(id)
+        if g.tv_show_seasons:
+            g.show_nae = g.tv_show_seasons[0]['show_name']
+        return render_template("tv_show_seasons.html")
 
     def edit_movie(self, id) -> str:
         """Edit Movie endpoint
 
         Returns:
-            str: edit_movie.html template
+            str: edit_movie.html
         """
         db = self.get_db()
         g.id = id
         if request.method == "POST":
             max_size_mb = request.form.get("max_size_mb", type=int)
-            resolutions = request.form["resolutions"]
-            valid_input = self.validate_movie_fields(max_size_mb, resolutions)
+            resolution_profile = request.form["resolution_profile"]
+            valid_input = self.validate_movie_fields(max_size_mb, resolution_profile)
             if valid_input:
                 db.update_movie(
                     id=id,
                     max_size_mb=max_size_mb,
-                    resolutions=resolutions,
+                    resolution_profile=resolution_profile,
                     state=db.states.SEARCHING,
                 )
                 flash("Movie Updated", "success")
@@ -189,99 +156,106 @@ class Visuals:
         data = db.get_movie(id)
         g.name = data["name"]
         g.max_size_mb = data["max_size_mb"]
-        g.resolutions = data["resolutions"]
+        g.resolution_profile = data["resolution_profile"]
         g.resolution_options = self.resolution_profiles
         return render_template("edit_movie.html")
 
-    def edit_series(self, id: str) -> str:
-        """Edit Series endpoint
+    def edit_tv_show(self, id: str) -> str:
+        """Edit Tv show endpoint
 
         Returns:
-            str: edit_series.html template
+            str: edit_tv_show.html page
         """
         db = self.get_db()
         g.id = id
         if request.method == "POST":
             max_episode_size_mb = request.form.get("max_episode_size_mb", type=int)
-            resolutions = request.form["resolutions"]
+            resolution_profile = request.form["resolution_profile"]
             valid_input = self.validate_movie_fields(
-                max_episode_size_mb, resolutions
+                max_episode_size_mb, resolution_profile
             )
             if valid_input:
-                db.update_series(
+                db.update_tv_show(
                     id=id,
                     max_episode_size_mb=max_episode_size_mb,
-                    resolutions=resolutions,
+                    resolution_profile=resolution_profile,
                 )
-                flash("Series Updated", "success")
-                return redirect(url_for("tv_series"))
-        data = db.get_series(id)
+                flash("Tv show Updated", "success")
+                return redirect(url_for("tv_shows"))
+        data = db.get_tv_show(id)
         g.name = data["name"]
         g.max_episode_size_mb = data["max_episode_size_mb"]
-        g.resolutions = data["resolutions"]
+        g.resolution_profile = data["resolution_profile"]
         g.resolution_options = self.resolution_profiles
-        return render_template("edit_series.html")
+        return render_template("edit_tv_show.html")
 
     def delete_movie(self, id: str) -> str:
-        """Deletes a movie
+        """Delete movie endpoint
 
         Args:
             id (str): the id of the movie to delete
 
         Returns:
-            str: movies template page
+            str: movies page
         """
         db = self.get_db()
         db.update_movie(id, state=db.states.DELETING)
         flash("Movie Marked for deletion!", "success")
         return redirect(url_for("movies"))
-    
+
     def pause_movie(self, id: str) -> str:
-        """Pause a movie
+        """Pause movie endpoint
 
         Args:
             id (str): the movie id to pause
 
         Returns:
-            str:  movies template page
+            str:  movies page
         """
         db = self.get_db()
         db.update_movie(id, state=db.states.PAUSED)
         flash("Movie Paused", "success")
         return redirect(url_for("movies"))
 
-    
-    def resume_movie(self, id:str) -> str:
+    def resume_movie(self, id: str) -> str:
+        """Resume movie endpoint
+
+        Args:
+            id (str): the movie id
+
+        Returns:
+            str: the movies page
+        """
         db = self.get_db()
         db.update_movie(id, state=db.states.SEARCHING)
         flash("Movie Download Resumed", "success")
         return redirect(url_for("movies"))
 
-    def delete_series(self, id: str) -> str:
-        """Deletes a movie
+    def delete_tv_show(self, id: str) -> str:
+        """Delete tv show endpoint
 
         Args:
-            id (str): the id of the movie to delete
+            id (str): the id of the tv show to delete
 
         Returns:
-            str: movies template page
+            str: tv_shows page
         """
         db = self.get_db()
-        db.update_series(id=id, state=db.states.DELETING)
-        flash("Tv Series Marked for deletion", "success")
-        return redirect(url_for("tv_series"))
-    
-    def pause_season(self, id: str, series_id: str):
-        db = self.get_db()
-        db.update_series_season(id, state=db.states.PAUSED)
-        flash("Tv Season Paused", "success")
-        return redirect(url_for("tv_series_seasons",id=series_id))
+        db.update_tv_show(id=id, state=db.states.DELETING)
+        flash("Tv Show Marked for deletion", "success")
+        return redirect(url_for("tv_shows"))
 
-    def resume_season(self, id: str, series_id: str):
+    def pause_season(self, id: str, show_id: str):
         db = self.get_db()
-        db.update_series_season(id, state=db.states.SEARCHING)
+        db.update_show_season(id, state=db.states.PAUSED)
+        flash("Tv Season Paused", "success")
+        return redirect(url_for("tv_show_seasons", id=show_id))
+
+    def resume_season(self, id: str, show_id: str):
+        db = self.get_db()
+        db.update_show_season(id, state=db.states.SEARCHING)
         flash("Tv Season download resumed", "success")
-        return redirect(url_for("tv_series_seasons", id=series_id))
+        return redirect(url_for("tv_show_seasons", id=show_id))
 
     def add_movie(self) -> str:
         """Add movie endpoint
@@ -293,39 +267,42 @@ class Visuals:
             db = self.get_db()
             name = request.form["name"]
             max_size_mb = request.form.get("max_size_mb", type=int)
-            resolutions = request.form["resolutions"]
-            valid_input = self.validate_movie_fields(max_size_mb, resolutions, name)
+            resolution_profile = request.form["resolution_profile"]
+            valid_input = self.validate_movie_fields(
+                max_size_mb, resolution_profile, name)
 
             if valid_input:
-                db.add_movie(name, max_size_mb, resolutions)
+                db.add_movie(name, max_size_mb, resolution_profile)
                 flash("Movie Added", "success")
                 return redirect(url_for("movies"))
         g.name = request.args.get('name', default="")
         g.resolution_options = self.resolution_profiles
         return render_template("add_movie.html")
 
-    def add_series(self) -> str:
-        """Add series endpoint
+    def add_tv_show(self) -> str:
+        """Add tv show endpoint
 
         Returns:
-            str: add_series.html template
+            str: add tv show page
         """
         if request.method == "POST":
             db = self.get_db()
             name = request.form["name"]
-            max_episode_size_mb = request.form.get("max_episode_size_mb", type=int)
-            resolutions = request.form["resolutions"]
-            valid_input = self.validate_movie_fields(max_episode_size_mb, resolutions, name)
+            max_episode_size_mb = request.form.get(
+                "max_episode_size_mb", type=int)
+            resolution_profile = request.form["resolution_profile"]
+            valid_input = self.validate_movie_fields(
+                max_episode_size_mb, resolution_profile, name)
 
             if valid_input:
-                db.add_series(name, max_episode_size_mb, resolutions)
-                flash("TV Series Added", "success")
-                return redirect(url_for("tv_series"))
+                db.add_tv_show(name, max_episode_size_mb, resolution_profile)
+                flash("TV Show Added", "success")
+                return redirect(url_for("tv_shows"))
 
         g.name = request.args.get('name', default="")
         g.resolution_options = self.resolution_profiles
-        return render_template("add_series.html")
-    
+        return render_template("add_tv_show.html")
+
     def search(self):
         search_query = request.args.get('search')
         g.results = self.imdb_finder.search(search_query)
@@ -353,14 +330,14 @@ class Visuals:
         if db is not None:
             db.close()
 
-    def validate_movie_fields(self, max_size_mb: int, resolutions: set, name: str = None):
-        """Validates if the fields: name, max_size_mb and resolutions
+    def validate_movie_fields(self, max_size_mb: int, resolution_profile: set, name: str = None):
+        """Validates if the fields: name, max_size_mb and resolution_profile
         have the proper valyes.
 
         Args:
             name (str): The movie name, must have be leat 3 character long
             max_size_mb (int): max size of the movie in megabytes, must me equal or larger than 1
-            resolutions (set): the resolution profiles
+            resolution_profile (set): the resolution profiles
 
         Returns:
             boolean: true if the fields are valid, false otherwise
@@ -377,7 +354,7 @@ class Visuals:
             flash("The max size must be at least 1 MB!", "danger")
 
         # Movie Resolution Set
-        if resolutions not in self.resolution_profiles:
+        if resolution_profile not in self.resolution_profiles:
             valid_input = False
             flash("Resolution profile not supported!", "danger")
 

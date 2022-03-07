@@ -1,0 +1,35 @@
+{% extends 'layout.html' %}
+{% block body %}
+  <h3 class='text-center text-muted mb-3'>Torrents Bot</h3>
+  <p class='text-right'><a href='{{url_for("add_tv_show")}}' class='btn btn-success '>+Add Tv Show</a></p>
+  <table class='table table-bordered'>
+    <thead>
+      <th>Name</th>
+      <th>Max Size (per episode)</th>
+      <th>Resolution Profile</th>
+      <th>State</th>
+      <th>Manage</th>
+    </thead>
+    <tbody>
+      {% for show in g.tv_shows %}
+        <tr>
+          <td>{{show.name}}</td>
+          {% if show.max_episode_size_mb >= 1024%}
+          <td>{{(show.max_episode_size_mb/1024) | int}} GB</td>
+          {% else %}
+          <td>{{show.max_episode_size_mb}} MB</td>
+          {% endif %}
+          <td>{{show.resolution_profile}}</td>
+          <td>{{show.state}}</td>
+          <td>
+          <a href='{{url_for("tv_show_seasons",id=show.id)}}' class='btn btn-info' style="float:left">Details</a>
+          <a href='{{url_for("edit_tv_show",id=show.id)}}' class='btn btn-primary' style="float:left">Edit</a>
+          <form action="{{ url_for('delete_tv_show', id=show.id) }}" method="post">
+            <input class="btn btn-danger" type="submit" value="Delete" onclick="return confirm('Are you sure?');" style="float:left">
+          </form>
+        </td>
+        </tr>
+      {%endfor%}
+    </tbody>
+  </table>
+{% endblock %}

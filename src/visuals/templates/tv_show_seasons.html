@@ -1,8 +1,8 @@
 {% extends 'layout.html' %}
 {% block body %}
-  <p class='text-left'><a href='{{url_for("tv_series")}}' class='btn btn-dark '>Back</a></p>
-  {% if g.series_name%}
-  <h4 class='text-center text-muted mb-3'>{{g.series_name}}</h3>
+  <p class='text-left'><a href='{{url_for("tv_shows")}}' class='btn btn-dark '>Back</a></p>
+  {% if g.show_name%}
+  <h4 class='text-center text-muted mb-3'>{{g.show_name}}</h3>
   {% endif %}
   <table class='table table-bordered'>
     <thead>
@@ -11,17 +11,17 @@
       <th>Manage</th>
     </thead>
     <tbody>
-      {% for season in g.tv_series_seasons %}
+      {% for season in g.tv_show_seasons %}
         <tr>
           <td>{{season.season_number}}</td>
           <td>{{season.season_state}}</td>
           <td>
           {% if season.season_state != 'PAUSED' %}
-          <form action="{{ url_for('pause_season', id=season['season_id'], series_id=season['series_id']) }}" method="post">
+          <form action="{{ url_for('pause_season', id=season['season_id'], show_id=season['show_id']) }}" method="post">
             <input class="btn btn-warning" type="submit" value="Pause">
           </form>
           {% else %}
-          <form action="{{ url_for('resume_season', id=season['season_id'], series_id=season['series_id']) }}" method="post">
+          <form action="{{ url_for('resume_season', id=season['season_id'], show_id=season['show_id']) }}" method="post">
             <input class="btn btn-success" type="submit" value="Resume">
           </form>
           {% endif %}

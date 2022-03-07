@@ -2,17 +2,17 @@
 {% block body %}
   <div class='row'>
     <div class='col-5 mx-auto'>
-      <h3>Edit Series</h3><hr>
-      <form method='post' action='{{url_for("edit_series",id=g.id)}}'>
+      <h3>Edit TV Show</h3><hr>
+      <form method='post' action='{{url_for("edit_tv_show",id=g.id)}}'>
         <div class='form-group'>
           <label>Max Size (MB)</label>
           <input type='text' name='max_episode_size_mb' required class='form-control' value='{{g.max_episode_size_mb}}'>
         </div>
         <div class='form-group'>
-          <span class="input-group-addon">Resolutions</span>
-            <select name="resolutions" class="selectpicker form-control">
+          <span class="input-group-addon">Resolution Profile</span>
+            <select name="resolution_profile" class="selectpicker form-control">
               {% for option in g.resolution_options %}
-                {% if option == g.resolutions %}
+                {% if option == g.resolution_profile %}
                   <option value="{{ option }}" selected>{{ option }} </option>
                 {% else %}
                   <option value="{{ option }}">{{ option }}</option>
