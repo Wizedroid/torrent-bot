@@ -290,6 +290,7 @@ class Visuals:
                 flash("Movie Added", "success")
                 return redirect(url_for("movies"))
         g.name = request.args.get('name', default="")
+        g.imdbid = request.args.get('imdbid', default="")
         g.resolution_options = self.resolution_profiles
         return render_template("add_movie.html")
 
@@ -304,14 +305,16 @@ class Visuals:
             name = request.form["name"]
             max_episode_size_mb = request.form.get("max_episode_size_mb", type=int)
             resolution_profile = request.form["resolution_profile"]
+            imdbid = request.form["imdbid"]
             valid_input = self.validate_fields(max_episode_size_mb, resolution_profile, name)
 
             if valid_input:
-                db.add_tv_show(name, max_episode_size_mb, resolution_profile)
+                db.add_tv_show(name, max_episode_size_mb, resolution_profile, imdbid)
                 flash("TV Show Added", "success")
                 return redirect(url_for("tv_shows"))
 
         g.name = request.args.get('name', default="")
+        g.imdbid = request.args.get('imdbid', default="")
         g.resolution_options = self.resolution_profiles
         return render_template("add_tv_show.html")
 

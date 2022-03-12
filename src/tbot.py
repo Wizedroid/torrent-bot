@@ -67,6 +67,7 @@ class TorrentBot:
 
         logging.info(f"Shuting down..")
         self.movies_probe.shutdown()
+        self.series_probe.shutdown()
 
     def exit_gracefully(self, *args) -> None:
         """Change the bot running flag to False

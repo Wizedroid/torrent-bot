@@ -75,7 +75,7 @@ class MovieProbe:
     def probe(self) -> None:
         """Search and download movies added to the databse (state=SEARCHING)
         """
-        for movie_row in self.db.get_movies_with_state(state=self.db.states.SEARCHING):
+        for movie_row in self.db.get_movies_by_state(state=self.db.states.SEARCHING):
             jackett_result = self.jackett.search_movies(
                 name=movie_row.get("name"),
                 resolution_profile=set(movie_row.get("resolution_profile").split(',')),

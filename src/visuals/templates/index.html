@@ -6,7 +6,17 @@
     <div class="container">
       <h1 class="mt-5">Automated torrent searching</h1>
       <p class="lead">Add movies and TV series to initialize the search. Don't forget to select the desired <code>resolution-profiles</code> when adding new entries for the desired resolution.</p>
-      <p>Contribute: <a href="https://github.com/aFoxPod/torrent-bot">GitHub by Pedro Chaves (aka FoxPod)</a></p>
+      <p>Contribute: <a href="https://github.com/aFoxPod/torrent-bot">GitHub</a></p>
     </div>
   </main>
+
+
+
+  <div class="container ">
+    <form class="form-inline my-2 my-lg-0" action="{{ url_for('search') }}" method="get">
+      <input class="form-control mr-sm-2" name="search" type="search" placeholder="Search" aria-label="Search">
+      <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+    </form>
+  </div>
+
 {% endblock %}

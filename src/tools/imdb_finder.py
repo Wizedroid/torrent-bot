@@ -10,24 +10,19 @@ class IMDBFinder:
 
     def search(self, title: str) -> object:
         """Search for the show/movie with the specified title
-
+    
         Args:
             title (str): the show/movie title
 
         Returns:
             object: the movie object
         """
-        return self.finder.search_movie(title)
-
-    def update_with_seasons(self, series: object) -> None:
-        """Updates the specified series object with the seasons and episodes
-
-        Args:
-            series (object): the series
-        """
-        self.finder.update(series, 'episodes')
+        results =  self.finder.search_movie(title)
+        for result in results:
+            result.data['imdbid'] = self.get_imdbid(result)
+        return results
     
-    def get_show_info(self, show_title: str) -> object:
+    def search_shows(self, show_title: str) -> set:
         """Search for the show with the specified title and update 
         it with the respective seasons and episodes
 
@@ -35,10 +30,47 @@ class IMDBFinder:
             show_title (str): the show title
 
         Returns:
+            set: the shows found
+        """
+        output = set()
+        shows = self.search(show_title)
+        for show in shows:
+            if 'series' in show['kind'].lower():
+                self.update_show_with_seasons(show)
+                output.add(show)
+
+        return output
+
+    def fetch(self, imdbid: str) -> object:
+        """Fetches the show/movie given by the specified imdb id
+
+        Args:
+            imdbid (str): the imdb unique identifier
+
+        Returns:
+            object: the show/movie object
+        """
+        return self.finder.get_movie(imdbid)
+
+    def update_show_with_seasons(self, series: object) -> None:
+        """Updates the specified series object with the seasons and episodes
+
+        Args:
+            series (object): the series
+        """
+        self.finder.update(series, 'episodes')
+
+    def fetch_show(self, imdbid: str) -> object:
+        """Fetches a show given by the specified imdb id
+
+        Args:
+            imdbid (str): the imdb id
+
+        Returns:
             object: the show object
         """
-        show = self.search(show_title)
-        self.update_with_seasons(show)
+        show = self.fetch(imdbid)
+        self.update_show_with_seasons(show)
         return show
 
     def get_imdbid(self, entry: object) -> str:
@@ -52,22 +84,36 @@ class IMDBFinder:
         """
         return self.finder.get_imdbID(entry)
 
+    def get_latest_tvshow_season(self, imdbid: str) -> tuple:
+        """Retreives the tv show latest season
+
+        season_info {
+            <episode_number>:
+                "title": <title>,
+                "kind": "episode",
+                "season": <season>,
+                "episode": <episode_number>
+                (...)
+        }
+
+        Args:
+            imdbid (str): the show imdb id
+
+        Returns:
+            tuple: the season number, the season info
+        """
+        show = self.fetch_show(imdbid=imdbid)
+        last_season = len(show['episodes'].keys())
+        return (last_season, show['episodes'][last_season])
+
+
 if __name__ == '__main__':
     finder = IMDBFinder()
-    movies = finder.search('The twilight zone')
-    for movie in movies:
-        print(movie.get('title'))
-        print(movie.get('full-size cover url'))
-        print(finder.get_imdbid(movie))
-        if 'series' in movie['kind']:
-            finder.update_with_seasons(movie)
-            print(f"seasons:{len(movie['episodes'].keys())}")
-            for season in movie['episodes']:
-                print(f"Season:{season}")
-                for episode in movie['episodes'][season]:
-                    print(f"Episode:{episode}")
-                    print(movie['episodes'][season][episode]['long imdb episode title'])
-                    if 'original air date' in movie['episodes'][season][episode]:
-                        print(movie['episodes'][season][episode]['original air date'])
-                    if 'year' in movie['episodes'][season][episode]:
-                        print(movie['episodes'][season][episode]['year'])
+    shows = finder.search_shows('Stranger Things')
+    for show in shows:
+        print("RAW DATA:")
+        print(show.data.keys())  # dict_keys(['title', 'year', 'kind', 'cover url', 'episodes', 'number of episodes'])
+        if 'episodes' in show.data:
+            print(f"Number of seasons: {len(show['episodes'].keys())}")
+            print(f"Number of episodes: {len(show['episodes'][1].keys())}")
+            print(f"Episode data: {show['episodes'][1][1].keys()}") # ['title', 'kind', 'episode of', 'season', 'episode', 'rating', 'votes', 'original air date', 'year', 'plot', 'canonical title', 'long imdb title', 'long imdb canonical title', 'smart canonical title', 'smart long imdb canonical title', 'long imdb episode title', 'series title', 'canonical series title', 'episode title', 'canonical episode title', 'smart canonical series title', 'smart canonical episode title']
