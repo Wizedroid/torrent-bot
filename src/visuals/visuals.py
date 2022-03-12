@@ -290,6 +290,7 @@ class Visuals:
                 flash("Movie Added", "success")
                 return redirect(url_for("movies"))
         g.name = request.args.get('name', default="")
+        g.imdbid = request.args.get('imdbid', default="")
         g.resolution_options = self.resolution_profiles
         return render_template("add_movie.html")
 
@@ -312,6 +313,7 @@ class Visuals:
                 return redirect(url_for("tv_shows"))
 
         g.name = request.args.get('name', default="")
+        g.imdbid = request.args.get('imdbid', default="")
         g.resolution_options = self.resolution_profiles
         return render_template("add_tv_show.html")
 

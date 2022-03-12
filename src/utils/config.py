@@ -11,10 +11,10 @@ DB_PATH = f"{ROOT_PATH}/tbot.db"
 RES_PROFILES = {
     "1080p+bluray",
     "1080p+webrip,1080p+web-dl,1080p+hdrip,1080p+brrip",
-    "1080p"
+    "1080p",
     "720p+bluray",
     "720p+webrip,720p+web-dl,720p+hdrip,720p+brrip",
-    "720p",
+    "720p"
 }
 
 jackett, qbit, movies, shows, frontend = None, None, None, None, None
