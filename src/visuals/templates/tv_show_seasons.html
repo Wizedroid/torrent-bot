@@ -16,6 +16,7 @@
           <td>{{season.season_number}}</td>
           <td>{{season.season_state}}</td>
           <td>
+          <a href='{{url_for("tv_show_season_episodes",id=season.season_id)}}' class='btn btn-info' style="float:left">Details</a>
           {% if season.season_state != 'PAUSED' %}
           <form action="{{ url_for('pause_season', id=season['season_id'], show_id=season['show_id']) }}" method="post">
             <input class="btn btn-warning" type="submit" value="Pause">

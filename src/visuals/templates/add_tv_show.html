@@ -13,20 +13,24 @@
             <input type='text' name='max_episode_size_mb' required class='form-control' value='1024'>
           </div>
           <div class='form-group'>
-            <label>IMDB ID</label>
-            <input type='text' name='imdbid' required class='form-control' value="{{g.imdbid}}">
-          </div>
-          <div class='form-group'>
             <span class="input-group-addon">Resolution Profile</span>
               <select name="resolution_profile" class="selectpicker form-control">
                 {% for option in g.resolution_options %}
-                  {% if option == g.resolution_profile %}
+                  {% if option == '1080p' %}
                     <option value="{{ option }}" selected>{{ option }} </option>
                   {% else %}
                     <option value="{{ option }}">{{ option }}</option>
                   {% endif %}
                 {% endfor %}
               </select>
+          </div>
+          <div class='form-group'>
+            <label>IMDB ID</label>
+            <input type='text' name='imdbid' required class='form-control' value="{{g.imdbid}}">
+          </div>
+          <div class='form-group'>
+            <label>Cover Url</label>
+            <input type='text' name='cover_url' class='form-control' value="{{g.cover_url}}">
           </div>
           <input type='submit' value='Submit' class='btn btn-primary'>
       </form>

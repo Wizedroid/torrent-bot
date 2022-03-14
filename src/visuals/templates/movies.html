@@ -9,7 +9,9 @@
       <th>Max Size</th>
       <th>Resolution Profile</th>
       <th>State</th>
+      <th>Cover</th>
       <th>Manage</th>
+      
     </thead>
     <tbody>
       {% for movie in g.movies %}
@@ -23,6 +25,7 @@
           {% endif %}
           <td>{{movie.resolution_profile}}</td>
           <td>{{movie.state}}</td>
+          <td><img src="{{movie.cover_url}}" alt="{{movie.name}}" width="135" height="200"  class="img-fluid" alt="Responsive image"></td>
           <td><a href='{{url_for("edit_movie",id=movie.id)}}' class='btn btn-primary'  style="float:left">Edit</a>
             {% if movie.state != 'PAUSED' %}
             <form action="{{ url_for('pause_movie', id=movie.id) }}" method="post" style="float:left">

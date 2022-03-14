@@ -1,0 +1,25 @@
+{% extends 'layout.html' %}
+{% block body %}
+  <p class='text-left'><a href='{{url_for("tv_show_seasons", id=g.show_id)}}' class='btn btn-dark '>Back</a></p>
+  {% if g.show_name%}
+  <h4 class='text-center text-muted mb-3'>Season {{g.season_number}}</h3>
+  {% endif %}
+  <table class='table table-bordered'>
+    <thead>
+      <th>Episode</th>
+      <th>Title</th>
+      <th>Air Date</th>
+      <th>State</th>
+    </thead>
+    <tbody>
+      {% for episode in g.tv_show_season_episodes %}
+        <tr>
+          <td>{{episode.episode_number}}</td>
+          <td>{{episode.episode_name}}</td>
+          <td>{{episode.episode_air_date}}</td>
+          <td>{{episode.episode_state}}</td>
+        </tr>
+      {%endfor%}
+    </tbody>
+  </table>
+{% endblock %}

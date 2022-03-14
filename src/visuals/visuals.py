@@ -38,6 +38,8 @@ class Visuals:
         self.app.add_url_rule("/tv_shows", "tv_shows", self.tv_shows)
         self.app.add_url_rule("/tv_show_seasons/<string:id>",
                               "tv_show_seasons", self.tv_show_seasons)
+        self.app.add_url_rule("/tv_show_season_episodes/<string:id>",
+                              "tv_show_season_episodes", self.tv_show_season_episodes)
         self.app.add_url_rule("/edit_movie/<string:id>",
                               "edit_movie", self.edit_movie, methods=["POST", "GET"])
         self.app.add_url_rule("/edit_tv_show/<string:id>", "edit_tv_show",
@@ -120,17 +122,25 @@ class Visuals:
         g.tv_shows = db.get_all_tv_shows()
         return render_template("tv_shows.html")
 
-    def tv_show_seasons(self, id) -> str:
+    def tv_show_seasons(self, id: int) -> str:
         """TV Show seaons endpoint
 
         Returns:
-            str: tv_show_seaons.html page
+            int: tv_show_seaons.html page
         """
         db = self.get_db()
         g.tv_show_seasons = db.get_tv_show_with_seasons(id)
         if g.tv_show_seasons:
             g.show_name = g.tv_show_seasons[0]['show_name']
         return render_template("tv_show_seasons.html")
+    
+    def tv_show_season_episodes(self, id: int) -> str:
+        db = self.get_db()
+        g.show_id = db.get_tv_show_season(id)['show_id']
+        g.tv_show_season_episodes = db.get_tv_show_season_with_episodes(id)
+        if g.tv_show_season_episodes:
+            g.season_number = g.tv_show_season_episodes[0]['season_number']
+        return render_template("tv_show_season_episodes.html")
 
     def edit_movie(self, id) -> str:
         """Edit Movie endpoint
@@ -143,13 +153,17 @@ class Visuals:
         if request.method == "POST":
             max_size_mb = request.form.get("max_size_mb", type=int)
             resolution_profile = request.form["resolution_profile"]
-            valid_input = self.validate_fields(max_size_mb, resolution_profile)
+            imdbid = request.form.get("imdbid", type=int)
+            cover_url = request.form["cover_url"]
+            valid_input = self.validate_fields(max_size_mb, resolution_profile, imdbid)
             if valid_input:
                 db.update_movie(
                     id=id,
                     max_size_mb=max_size_mb,
                     resolution_profile=resolution_profile,
                     state=db.states.SEARCHING,
+                    imdbid=imdbid,
+                    cover_url=cover_url
                 )
                 flash("Movie Updated", "success")
                 return redirect(url_for("movies"))
@@ -157,6 +171,8 @@ class Visuals:
         g.name = data["name"]
         g.max_size_mb = data["max_size_mb"]
         g.resolution_profile = data["resolution_profile"]
+        g.imdbid = data['imdbid']
+        g.cover_url = data['cover_url']
         g.resolution_options = self.resolution_profiles
         return render_template("edit_movie.html")
 
@@ -171,12 +187,16 @@ class Visuals:
         if request.method == "POST":
             max_episode_size_mb = request.form.get("max_episode_size_mb", type=int)
             resolution_profile = request.form["resolution_profile"]
-            valid_input = self.validate_fields(max_episode_size_mb, resolution_profile)
+            imdbid = request.form.get("imdbid", type=int)
+            cover_url = request.form['cover_url']
+            valid_input = self.validate_fields(max_episode_size_mb, resolution_profile, imdbid)
             if valid_input:
                 db.update_tv_show(
                     id=id,
                     max_episode_size_mb=max_episode_size_mb,
                     resolution_profile=resolution_profile,
+                    imdbid=imdbid,
+                    cover_url=cover_url
                 )
                 flash("Tv show Updated", "success")
                 return redirect(url_for("tv_shows"))
@@ -185,6 +205,8 @@ class Visuals:
         g.max_episode_size_mb = data["max_episode_size_mb"]
         g.resolution_profile = data["resolution_profile"]
         g.resolution_options = self.resolution_profiles
+        g.imdbid = data['imdbid']
+        g.cover_url = data['cover_url']
         return render_template("edit_tv_show.html")
 
     def delete_movie(self, id: str) -> str:
@@ -284,13 +306,16 @@ class Visuals:
             name = request.form["name"]
             max_size_mb = request.form.get("max_size_mb", type=int)
             resolution_profile = request.form["resolution_profile"]
-            valid_input = self.validate_fields(max_size_mb, resolution_profile, name)
+            imdbid = request.form.get("imdbid", type=int)
+            cover_url = request.form.get("cover_url", default="")
+            valid_input = self.validate_fields(max_size_mb, resolution_profile, imdbid, name)
             if valid_input:
-                db.add_movie(name, max_size_mb, resolution_profile)
+                db.add_movie(name, max_size_mb, resolution_profile, imdbid, cover_url)
                 flash("Movie Added", "success")
                 return redirect(url_for("movies"))
         g.name = request.args.get('name', default="")
         g.imdbid = request.args.get('imdbid', default="")
+        g.cover_url = request.args.get('cover_url', default="")
         g.resolution_options = self.resolution_profiles
         return render_template("add_movie.html")
 
@@ -305,16 +330,18 @@ class Visuals:
             name = request.form["name"]
             max_episode_size_mb = request.form.get("max_episode_size_mb", type=int)
             resolution_profile = request.form["resolution_profile"]
-            imdbid = request.form["imdbid"]
-            valid_input = self.validate_fields(max_episode_size_mb, resolution_profile, name)
+            imdbid = request.form.get("imdbid", type=int)
+            cover_url = request.form["cover_url"]
+            valid_input = self.validate_fields(max_episode_size_mb, resolution_profile, imdbid, name)
 
             if valid_input:
-                db.add_tv_show(name, max_episode_size_mb, resolution_profile, imdbid)
+                db.add_tv_show(name, max_episode_size_mb, resolution_profile, imdbid, cover_url)
                 flash("TV Show Added", "success")
                 return redirect(url_for("tv_shows"))
 
         g.name = request.args.get('name', default="")
         g.imdbid = request.args.get('imdbid', default="")
+        g.cover_url = request.args.get('cover_url', default="")
         g.resolution_options = self.resolution_profiles
         return render_template("add_tv_show.html")
 
@@ -350,7 +377,7 @@ class Visuals:
         if db is not None:
             db.close()
 
-    def validate_fields(self, max_size_mb: int, resolution_profile: set, name: str = None):
+    def validate_fields(self, max_size_mb: int, resolution_profile: set,  imdbid: int, name: str = None):
         """Validates if the fields: name, max_size_mb and resolution_profile
         have the proper valyes.
 
@@ -372,6 +399,11 @@ class Visuals:
         if max_size_mb < 1:
             valid_input = False
             flash("The max size must be at least 1 MB!", "danger")
+        
+        # IMDB ID
+        if type(imdbid) != int:
+            valid_input = False
+            flash("The imdb id mustbe an integer!", "danger")
 
         # Movie Resolution Set
         if resolution_profile not in self.resolution_profiles:

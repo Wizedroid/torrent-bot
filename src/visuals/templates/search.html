@@ -6,17 +6,20 @@
         {% if  'movie' in entry['kind'] or 'series' in entry['kind']%}
             {{entry['title']}} ({{entry['kind']}})
             <p>
-            <img src="{{entry['full-size cover url']}} alt="{{entry['title']}}" width="270" height="400"  class="img-fluid" alt="Responsive image">
+            <img src="{{entry['full-size cover url']}}" alt="{{entry['title']}}" width="270" height="400"  class="img-fluid" alt="Responsive image">
             <p>
             {% if 'movie' in entry['kind'] %}
             <form action="{{ url_for('add_movie') }}" method="get">
                 <input type='hidden' name='name' required class='form-control' value="{{entry['title']}}" >
+                <input type='hidden' name='imdbid' required class='form-control' value="{{entry['imdbid']}}">
+                <input type='hidden' name='cover_url' required class='form-control' value="{{entry['full-size cover url']}}">
                 <input class="btn btn-outline-success" type="submit" value="ADD">
             </form>
             {% elif  'series' in entry['kind'] %}
             <form action="{{ url_for('add_tv_show') }}" method="get">
                 <input type='hidden' name='name' required class='form-control' value="{{entry['title']}}">
                 <input type='hidden' name='imdbid' required class='form-control' value="{{entry['imdbid']}}">
+                <input type='hidden' name='cover_url' required class='form-control' value="{{entry['full-size cover url']}}">
                 <input class="btn btn-outline-success" type="submit" value="ADD">
             </form>
             {% endif %}

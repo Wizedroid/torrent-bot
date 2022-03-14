@@ -75,7 +75,8 @@ class JackettClient:
         season: int,
         max_size_bytes: int = None,
         lang: str = None,
-        min_number_seeds: int = None
+        min_number_seeds: int = None,
+        episode: int = None
     ) -> list:
         """Searches Jackett for a TV Series with the specified characteristics.
 
@@ -86,7 +87,7 @@ class JackettClient:
             max_size_bytes (int, optional): the maximum size of the TV Series in bytes
             lang (str, optional): The desired language
             min_number_seeds (int, optional): The minimum seeds
-
+            episode(int, optional): The episode number
         Returns:
             list: [description]
         """
@@ -112,7 +113,9 @@ class JackettClient:
                         continue
                     if not re.search(f"(season|s).?[0-9]?{season}", title):
                         continue
-                    if re.search(f"(episode|ep|e)[0-9]+", title):
+                    if not episode and re.search(f"(episode|ep|e).?[0-9]+", title):
+                        continue
+                    if episode and not  re.search(f"(episode|ep|e).?0*{episode}", title):
                         continue
                     tv_series.append(result)
         return sorted(tv_series, key=lambda i: i['Seeders'], reverse=True)
