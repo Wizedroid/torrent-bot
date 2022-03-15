@@ -109,7 +109,7 @@ class IMDBFinder:
 
 if __name__ == '__main__':
     finder = IMDBFinder()
-    shows = finder.search_shows('Stranger Things')
+    shows = finder.search_shows('Space Patrol (1950)')
     for show in shows:
         print("RAW DATA:")
         print(show.data.keys())  # dict_keys(['title', 'year', 'kind', 'cover url', 'episodes', 'number of episodes'])

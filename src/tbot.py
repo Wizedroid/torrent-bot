@@ -49,29 +49,25 @@ class TorrentBot:
     def start(self) -> None:
         """Start torrent bot. 
         The starting procedure includes initializing the frontend and 
-        continously probing for new torrents.
+        continuously probing for new torrents.
         """
         logging.info("Starting visuals")
         self.visuals.start()
-        sleepcount = 5
         while self.running:
-            if sleepcount == 5:
-                logging.debug("Probing...")
-                self.movies_probe.start()
-                self.series_probe.start()
-                logging.debug(f"Going to sleep...")
-                sleepcount = 0
-            else:
-                time.sleep(1)
-                sleepcount += 1
+            logging.debug("Probing...")
+            self.movies_probe.start()
+            self.series_probe.start()
+            logging.debug(f"Going to sleep...")
+            time.sleep(5)
 
-        logging.info(f"Shuting down..")
+        logging.info(f"Shutting down..")
         self.movies_probe.shutdown()
         self.series_probe.shutdown()
 
     def exit_gracefully(self, *args) -> None:
         """Change the bot running flag to False
         """
+        logging.info(f"Received terminating signal..")
         self.running = False
 
 

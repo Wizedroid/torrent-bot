@@ -6,7 +6,7 @@ from .probe import Probe
 
 class MovieProbe(Probe):
     """
-    Movie probe.
+    Movies probe
 
     Attributes
     ----------
@@ -22,22 +22,22 @@ class MovieProbe(Probe):
         the database file path
     movies_storage_dir: str
         the path were the movies will be stored
-    retention_preiod_sec:int
+    retention_period_sec:int
         the maximum seeding period after which the torrents get removed
     """
 
     def __init__(
-        self,
-        jackett_api_key: str,
-        jackett_api_url: str,
-        qbit_hostname: str,
-        qbit_port: int,
-        data_path: str,
-        storage_dir: str,
-        retention_preiod_sec: int,
+            self,
+            jackett_api_key: str,
+            jackett_api_url: str,
+            qbit_hostname: str,
+            qbit_port: int,
+            data_path: str,
+            movies_storage_dir: str,
+            retention_period_sec: int,
     ) -> None:
         super().__init__(jackett_api_key, jackett_api_url, qbit_hostname,
-                       qbit_port, data_path, storage_dir, retention_preiod_sec)
+                         qbit_port, data_path, movies_storage_dir, retention_period_sec)
 
     @staticmethod
     def new(config: config):
@@ -60,27 +60,29 @@ class MovieProbe(Probe):
         )
 
     def probe(self) -> None:
-        """Search and download movies added to the databse (state=SEARCHING)
+        """Search and download movies added to the database.
+        Only probe if the database 'state' column matches the self.db.states.SEARCHING state.
         """
         for movie_row in self.db.get_movies_by_state(state=self.db.states.SEARCHING):
-                jackett_result = self.jackett.search_movies(
-                    name=movie_row.get("name"),
-                    resolution_profile=set(movie_row.get(
-                        "resolution_profile").split(',')),
-                    max_size_bytes=self.mb_to_bytes(movie_row.get("max_size_mb")),
-                    min_number_seeds=2,
+            jackett_result = self.jackett.search_movies(
+                name=movie_row.get("name"),
+                resolution_profile=set(movie_row.get(
+                    "resolution_profile").split(',')),
+                max_size_bytes=self.mb_to_bytes(movie_row.get("max_size_mb")),
+                min_number_seeds=2,
+                imdbid=movie_row.get('imdbid')
+            )
+            if jackett_result:
+                movie = jackett_result[0]  # Highest number of seeds
+                magnet_uri = movie["MagnetUri"]
+                self.qbit.download(magnet_uri, self.storage_dir)
+                self.db.update_movie(
+                    id=movie_row["id"],
+                    state=self.db.states.DOWNLOADING,
+                    hash=movie["InfoHash"],
                 )
-                if jackett_result:
-                    movie = jackett_result[0]  # Highest number of seeds
-                    magnetUri = movie["MagnetUri"]
-                    self.qbit.download(magnetUri, self.storage_dir)
-                    self.db.update_movie(
-                        id=movie_row["id"],
-                        state=self.db.states.DOWNLOADING,
-                        hash=movie["InfoHash"],
-                    )
-                else:
-                    logging.info(f"Movie {movie_row.get('name')} not found!")
+            else:
+                logging.info(f"Movie {movie_row.get('name')} not found!")
 
     def update(self) -> None:
         """Updates the database state to reflect the current downloads
@@ -99,5 +101,5 @@ class MovieProbe(Probe):
             if not hash:
                 self.db.delete_movie(id)
                 continue
-            
+
             self.update_torrent_states(id, hash, state, type="MOVIE")

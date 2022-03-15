@@ -1,7 +1,4 @@
-from collections import namedtuple
 import sqlite3
-
-import imdb
 
 
 class TorrentState:
@@ -38,6 +35,7 @@ class TBDatabase:
     def __init__(self, db_file_path: str) -> None:
         self.db_file_path = db_file_path
         self.connection = sqlite3.connect(self.db_file_path)
+        self.connection.execute("PRAGMA foreign_keys = ON")
         self.connection.row_factory = dict_factory
         self.states = TorrentState()
 
@@ -56,7 +54,7 @@ class TBDatabase:
             "max_size_mb" INTEGER NOT NULL,
             "resolution_profile"	TEXT NOT NULL,
             "state" TEXT NOT NULL DEFAULT '{self.states.SEARCHING}',
-            "imdbid"	TEXT NOT NULL,
+            "imdbid"	INTEGER NOT NULL,
             "cover_url" TEXT,
             "hash" TEXT)
         """
@@ -68,7 +66,7 @@ class TBDatabase:
             "name" TEXT UNIQUE NOT NULL,
             "max_episode_size_mb" INTEGER NOT NULL,
             "resolution_profile"	TEXT NOT NULL,
-            "imdbid"	TEXT NOT NULL,
+            "imdbid"	INTEGER NOT NULL,
             "state" TEXT NOT NULL DEFAULT '{self.states.SEARCHING}',
             "cover_url" TEXT
         )
@@ -112,6 +110,7 @@ class TBDatabase:
                 tv_shows.resolution_profile as resolution_profile,
                 tv_shows.name as show_name,
                 tv_shows.max_episode_size_mb as max_episode_size_mb,
+                tv_shows.imdbid as show_imdbid,
                 tv_show_seasons.id as season_id,
                 tv_show_seasons.season_number as season_number,
                 tv_show_seasons.season_number_episodes as season_number_episodes,
@@ -145,7 +144,7 @@ class TBDatabase:
         self.connection.commit()
 
     def get_all_movies(self) -> list:
-        """Retreives all movies
+        """Retrieves all movies
 
         Returns:
             list: the the list of movies
@@ -155,7 +154,7 @@ class TBDatabase:
         return cur.fetchall()
 
     def get_all_tv_shows(self) -> list:
-        """Retreives all tv shows
+        """Retrieves all tv shows
 
         Returns:
             list: the list of tv shows
@@ -165,7 +164,7 @@ class TBDatabase:
         return cur.fetchall()
 
     def get_all_seasons(self) -> list:
-        """Retreives all tv show seasons
+        """Retrieves all tv show seasons
 
         Returns:
             list: the list of seasons
@@ -175,7 +174,7 @@ class TBDatabase:
         return cur.fetchall()
 
     def get_all_episodes(self) -> list:
-        """Retreives all episodes
+        """Retrieves all episodes
 
         Returns:
             list: the list of episdoes
@@ -185,7 +184,7 @@ class TBDatabase:
         return cur.fetchall()
 
     def get_all_tv_shows_with_seasons(self) -> list:
-        """Retreives all tv shows and seasons
+        """Retrieves all tv shows and seasons
 
         Returns:
             list: the list of tv shows and seaons
@@ -195,7 +194,7 @@ class TBDatabase:
         return cur.fetchall()
 
     def get_all_tv_shows_season_episodes(self) -> list:
-        """Retreives all tv shows seasons and episodes
+        """Retrieves all tv shows seasons and episodes
 
         Returns:
             list: the list of tv shows season episodes
@@ -238,7 +237,7 @@ class TBDatabase:
         return cur.fetchall()
 
     def get_tv_show_with_seasons_by_state(self, state: str) -> list:
-        """Retreives all tv show seaons with the specified state
+        """Retrieves all tv show seaons with the specified state
 
         Args:
             state (str): the state (must match a valid state)
@@ -257,7 +256,7 @@ class TBDatabase:
         return cur.fetchall()
 
     def get_tv_show_seasons_with_episodes_by_state(self, state: str) -> list:
-        """Retreives all tv show season episodes with the specified state
+        """Retrieves all tv show season episodes with the specified state
 
         Args:
             state (str): the state (must match a valid state)
@@ -276,10 +275,10 @@ class TBDatabase:
         return cur.fetchall()
 
     def get_movie(self, id: int) -> dict:
-        """retreives a movie
+        """Retrieves a movie
 
         Args:
-            id (int): the id of the movie to retreive
+            id (int): the id of the movie to retrieve
 
         Returns:
             dict: the movie
@@ -289,10 +288,10 @@ class TBDatabase:
         return cur.fetchone()
 
     def get_tv_show(self, id: int) -> dict:
-        """retreives a tv show
+        """Retrieves a tv show
 
         Args:
-            id (int): the id of the tv show to retreive
+            id (int): the id of the tv show to retrieve
 
         Returns:
             dict: the tv show
@@ -302,10 +301,10 @@ class TBDatabase:
         return cur.fetchone()
 
     def get_tv_show_season(self, id: str) -> dict:
-        """retreives a tv show season
+        """Retrieves a tv show season
 
         Args:
-            id (str): the id of the tv show season to retreive
+            id (str): the id of the tv show season to retrieve
 
         Returns:
             dict: the tv show season
@@ -315,7 +314,7 @@ class TBDatabase:
         return cur.fetchone()
 
     def get_tv_show_with_seasons(self, id: str) -> list:
-        """Retreives all seasons for the tv show with the sepecified id
+        """Retrieves all seasons for the tv show with the sepecified id
 
         Args:
             id (str): the tv show id
@@ -328,7 +327,7 @@ class TBDatabase:
         return cur.fetchall()
     
     def get_tv_show_season_with_episodes(self, id: str) -> list:
-        """Retreives all seasons for the tv show with the sepecified id
+        """Retrieves all seasons for the tv show with the sepecified id
 
         Args:
             id (str): the tv show id
@@ -341,7 +340,7 @@ class TBDatabase:
         return cur.fetchall()
 
     def get_season_episodes(self, season_id: str) -> list:
-        """Retreives all episodes for the specified season id
+        """Retrieves all episodes for the specified season id
 
         Args:
             season_id (str): the season id
@@ -373,7 +372,6 @@ class TBDatabase:
         cur = self.connection.cursor()
         cur.execute("DELETE FROM tv_shows WHERE id=?", (id,))
         self.connection.commit()
-        print("abc")
 
     def delete_season(self, id: int):
         """Delete a season
@@ -488,7 +486,7 @@ class TBDatabase:
         return cur.execute('SELECT last_insert_rowid() as id').fetchone()['id']
 
     def get_season_id(self, show_id: int, season_number: int) -> int:
-        """Retreives the season id from the show_id and season_number
+        """Retrieves the season id from the show_id and season_number
 
         Args:
             show_id (int): the show id
@@ -647,7 +645,7 @@ class TBDatabase:
         self.connection.commit()
 
     def get_season_states(self, show_id: int) -> set:
-        """Retreives a set of all current season states for the specified show 
+        """Retrieves a set of all current season states for the specified show 
 
         Args:
             show_id (int): the show id
@@ -665,7 +663,7 @@ class TBDatabase:
         return state_set
 
     def get_season_episodes_states(self, season_id) -> set:
-        """Retreives a set of all current season states for the specified show 
+        """Retrieves a set of all current season states for the specified show 
 
         Args:
             show_id (int): the show id

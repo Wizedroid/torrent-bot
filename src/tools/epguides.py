@@ -2,6 +2,7 @@ from urllib.parse import quote
 import requests
 import json
 
+
 class EPGuidesClient:
     """Episode guides client
     """
@@ -26,6 +27,7 @@ class EPGuidesClient:
     @staticmethod
     def encode(name: str) -> str:
         return quote(name.strip().lower())
+
 
 if __name__ == '__main__':
     epgclient = EPGuidesClient()

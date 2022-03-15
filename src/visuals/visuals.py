@@ -1,16 +1,14 @@
-from sqlite3.dbapi2 import Connection, Error
+from sqlite3.dbapi2 import Error
 import threading
 from flask import Flask, render_template, request, redirect, url_for, flash
 from flask import current_app, g
-from data import TBDatabase
 from tools import IMDBFinder, imdb_finder
-import sys
 from data.database import TBDatabase
 from utils import config
 
 
 class Visuals:
-    """Torrent Bot Frontent (aka visuals) using Flask's framework.
+    """Torrent Bot Frontend (aka visuals) using Flask's framework.
 
     Attributes
     ----------

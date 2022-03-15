@@ -1,3 +1,5 @@
 qbittorrent-api
 flask
 omdbapi
+cinemagoer
+pyyaml

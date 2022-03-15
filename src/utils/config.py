@@ -14,7 +14,8 @@ RES_PROFILES = {
     "1080p",
     "720p+bluray",
     "720p+webrip,720p+web-dl,720p+hdrip,720p+brrip",
-    "720p"
+    "720p",
+    "any"
 }
 
 jackett, qbit, movies, shows, frontend = None, None, None, None, None
