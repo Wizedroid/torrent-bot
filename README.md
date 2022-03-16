@@ -14,7 +14,7 @@ README based on https://github.com/othneildrew/Best-README-Template
 <br />
 <div align="center">
   <a href="https://github.com/afoxpod/torrent-bot">
-    <img src="https://github.com/afoxpod/torrent-bot/images/logo.png" alt="Logo" width="80" height="80">
+    <img src="images/logo.png" alt="Logo" width="80" height="80">
   </a>
 
 <h3 align="center">Torrent Bot</h3>
