@@ -1,8 +1,0 @@
-- Jackett doesn't properly allow users to search by season/episode, therefore the search is based on the
-torrent title using regular expressions, which are prone to errors since there's no standard for the title naming.
-
-- A large portion of torrents don't the imdbid information, therefore we can't use it to properly filter the the
-movies/series wanted.
-
-- Other filter conditions can be added to the name
-
