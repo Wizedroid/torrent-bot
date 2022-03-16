@@ -254,13 +254,13 @@ Project Link: [https://github.com/afoxpod/torrent-bot](https://github.com/afoxpo
 
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
-[contributors-shield]: https://img.shields.io/github/contributors/afoxpod/torrent-bot.svg.svg?style=for-the-badge
-[forks-shield]: https://img.shields.io/github/forks/afoxpod/torrent-bot.svg?style=for-the-badge
+[contributors-shield]: https://img.shields.io/github/contributors/afoxpod/torrent-bot.svg.svg?style=flat-square
+[forks-shield]: https://img.shields.io/github/forks/afoxpod/torrent-bot.svg?style=plastic
 [forks-url]: https://github.com/afoxpod/torrent-bot/network/members
-[stars-shield]: https://img.shields.io/github/stars/afoxpod/torrent-bot.svg?style=for-the-badge
+[stars-shield]: https://img.shields.io/github/stars/afoxpod/torrent-bot.svg?style=plastic
 [stars-url]: https://github.com/afoxpod/torrent-bot/stargazers
-[issues-shield]: https://img.shields.io/github/issues/afoxpod/torrent-bot.svg?style=for-the-badge
+[issues-shield]: https://img.shields.io/github/issues/afoxpod/torrent-bot.svg?style=plastic
 [issues-url]: https://github.com/afoxpod/torrent-bot/issues
-[license-shield]: https://img.shields.io/github/license/afoxpod/torrent-bot.svg?style=for-the-badge
+[license-shield]: https://img.shields.io/github/license/afoxpod/torrent-bot.svg?style=plastic
 [license-url]: https://github.com/afoxpod/torrent-bot/blob/master/LICENSE.txt
 [product-screenshot]: images/home_page.png
