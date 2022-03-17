@@ -269,6 +269,12 @@ class Visuals:
         """
         db = self.get_db()
         db.update_tv_show(id=id, state=db.states.DELETING)
+        seasons = db.get_tv_show_with_seasons(id=id)
+        for season in seasons:
+            db.update_show_season(id=season['season_id'], state=db.states.DELETING)
+            episodes = db.get_tv_show_season_with_episodes(id=season['season_id'])
+            for episode in episodes:
+                db.update_tv_show_season_episode(id=episode['episode_id'], state=db.states.DELETING)
         flash("Tv Show Marked for deletion", "success")
         return redirect(url_for("tv_shows"))
 
