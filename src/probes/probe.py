@@ -6,7 +6,7 @@ from tools import QbittorrentClient
 from data import TBDatabase
 from requests.exceptions import ConnectionError
 from imdb._exceptions import IMDbDataAccessError
-
+from qbittorrentapi.exceptions import APIConnectionError
 
 class Probe(ABC):
     """
@@ -54,6 +54,8 @@ class Probe(ABC):
             self.update()
         except ConnectionError:
             logging.info(f"Failed to reach jackett!")
+        except APIConnectionError:
+            logging.info(f"Failed to reach qbittorrent!")
         except IMDbDataAccessError:
             logging.error(f"Failed to find show information on imdb")
 

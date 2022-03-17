@@ -1,11 +1,12 @@
-from sqlite3.dbapi2 import Error
 import threading
+import logging
+from sqlite3.dbapi2 import Error
 from flask import Flask, render_template, request, redirect, url_for, flash
 from flask import current_app, g
 from tools import IMDBFinder, imdb_finder
 from data.database import TBDatabase
 from utils import config
-
+from sqlite3 import IntegrityError
 
 class Visuals:
     """Torrent Bot Frontend (aka visuals) using Flask's framework.
@@ -308,8 +309,12 @@ class Visuals:
             cover_url = request.form.get("cover_url", default="")
             valid_input = self.validate_fields(max_size_mb, resolution_profile, imdbid, name)
             if valid_input:
-                db.add_movie(name, max_size_mb, resolution_profile, imdbid, cover_url)
-                flash("Movie Added", "success")
+                try:
+                    db.add_movie(name, max_size_mb, resolution_profile, imdbid, cover_url)
+                    flash("Movie Added", "success")
+                except IntegrityError as error:
+                    logging.info(error)
+                    flash("Failed to add movie, already exists!", "danger")
                 return redirect(url_for("movies"))
         g.name = request.args.get('name', default="")
         g.imdbid = request.args.get('imdbid', default="")
@@ -333,8 +338,12 @@ class Visuals:
             valid_input = self.validate_fields(max_episode_size_mb, resolution_profile, imdbid, name)
 
             if valid_input:
-                db.add_tv_show(name, max_episode_size_mb, resolution_profile, imdbid, cover_url)
-                flash("TV Show Added", "success")
+                try:
+                    db.add_tv_show(name, max_episode_size_mb, resolution_profile, imdbid, cover_url)
+                    flash("TV Show Added", "success")
+                except IntegrityError as error:
+                    logging.info(error)
+                    flash("Failed to tv show, already exists!", "danger")
                 return redirect(url_for("tv_shows"))
 
         g.name = request.args.get('name', default="")
