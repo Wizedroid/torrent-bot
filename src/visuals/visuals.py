@@ -156,15 +156,19 @@ class Visuals:
             cover_url = request.form["cover_url"]
             valid_input = self.validate_fields(max_size_mb, resolution_profile, imdbid)
             if valid_input:
-                db.update_movie(
-                    id=id,
-                    max_size_mb=max_size_mb,
-                    resolution_profile=resolution_profile,
-                    state=db.states.SEARCHING,
-                    imdbid=imdbid,
-                    cover_url=cover_url
-                )
-                flash("Movie Updated", "success")
+                try:
+                    db.update_movie(
+                        id=id,
+                        max_size_mb=max_size_mb,
+                        resolution_profile=resolution_profile,
+                        state=db.states.SEARCHING,
+                        imdbid=imdbid,
+                        cover_url=cover_url
+                    )
+                    flash("Movie Updated", "success")
+                except IntegrityError as error:
+                    logging.info(error)
+                    flash("Failed to edit movie, duplicate entry!", "danger")
                 return redirect(url_for("movies"))
         data = db.get_movie(id)
         g.name = data["name"]
@@ -190,14 +194,18 @@ class Visuals:
             cover_url = request.form['cover_url']
             valid_input = self.validate_fields(max_episode_size_mb, resolution_profile, imdbid)
             if valid_input:
-                db.update_tv_show(
-                    id=id,
-                    max_episode_size_mb=max_episode_size_mb,
-                    resolution_profile=resolution_profile,
-                    imdbid=imdbid,
-                    cover_url=cover_url
-                )
-                flash("Tv show Updated", "success")
+                try:
+                    db.update_tv_show(
+                        id=id,
+                        max_episode_size_mb=max_episode_size_mb,
+                        resolution_profile=resolution_profile,
+                        imdbid=imdbid,
+                        cover_url=cover_url
+                    )
+                    flash("Tv show Updated", "success")
+                except IntegrityError as error:
+                    logging.info(error)
+                    flash("Failed to edit tv show, duplicate entry!", "danger")
                 return redirect(url_for("tv_shows"))
         data = db.get_tv_show(id)
         g.name = data["name"]
