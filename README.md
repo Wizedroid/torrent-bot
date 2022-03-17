@@ -13,7 +13,7 @@ README based on https://github.com/othneildrew/Best-README-Template
 <!-- PROJECT LOGO -->
 <br />
 <div align="center">
-  <a href="https://github.com/afoxpod/torrent-bot">
+  <a href="https://github.com/wizedroid/torrent-bot">
     <img src="images/logo.png" alt="Logo" width="80" height="80">
   </a>
 
@@ -22,14 +22,14 @@ README based on https://github.com/othneildrew/Best-README-Template
   <p align="center">
     An application for searching movies & shows and automatically download them
     <br />
-    <a href="https://github.com/afoxpod/torrent-bot"><strong>Explore the docs »</strong></a>
+    <a href="https://github.com/wizedroid/torrent-bot"><strong>Explore the docs »</strong></a>
     <br />
     <br />
-    <a href="https://github.com/afoxpod/torrent-bot">View Demo</a>
+    <a href="https://github.com/wizedroid/torrent-bot">View Demo</a>
     ·
-    <a href="https://github.com/afoxpod/torrent-bot/issues">Report Bug</a>
+    <a href="https://github.com/wizedroid/torrent-bot/issues">Report Bug</a>
     ·
-    <a href="https://github.com/afoxpod/torrent-bot/issues">Request Feature</a>
+    <a href="https://github.com/wizedroid/torrent-bot/issues">Request Feature</a>
   </p>
 </div>
 
@@ -75,7 +75,7 @@ causes the bot to look for the respective torrents and automatically add them to
 If the movie or tv show hasn't been released yet, the bot will keep searching for it and downloads
 new releases.
 
-[![Product Name Screen Shot][product-screenshot]](https://github.com/afoxpod/torrent-bot)
+[![Product Name Screen Shot][product-screenshot]](https://github.com/wizedroid/torrent-bot)
 
 
 ### Disclaimer
@@ -133,7 +133,7 @@ shows:
 3. Clone the repository
 
 ```commandline
-git clone https://github.com/afoxpod/torrent-bot
+git clone https://github.com/wizedroid/torrent-bot
 ```
 
 4. Install the python requirements (use a venv if needed)
@@ -245,7 +245,7 @@ Distributed under the MIT License. See `LICENSE.txt` for more information.
 
 <!-- CONTACT -->
 ## Contact
-Project Link: [https://github.com/afoxpod/torrent-bot](https://github.com/afoxpod/torrent-bot)
+Project Link: [https://github.com/wizedroid/torrent-bot](https://github.com/wizedroid/torrent-bot)
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
@@ -254,13 +254,13 @@ Project Link: [https://github.com/afoxpod/torrent-bot](https://github.com/afoxpo
 
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
-[contributors-shield]: https://img.shields.io/github/contributors/afoxpod/torrent-bot.svg.svg?style=flat-square
-[forks-shield]: https://img.shields.io/github/forks/afoxpod/torrent-bot.svg?style=plastic
-[forks-url]: https://github.com/afoxpod/torrent-bot/network/members
-[stars-shield]: https://img.shields.io/github/stars/afoxpod/torrent-bot.svg?style=plastic
-[stars-url]: https://github.com/afoxpod/torrent-bot/stargazers
-[issues-shield]: https://img.shields.io/github/issues/afoxpod/torrent-bot.svg?style=plastic
-[issues-url]: https://github.com/afoxpod/torrent-bot/issues
-[license-shield]: https://img.shields.io/github/license/afoxpod/torrent-bot.svg?style=plastic
-[license-url]: https://github.com/afoxpod/torrent-bot/blob/master/LICENSE.txt
+[contributors-shield]: https://img.shields.io/github/contributors/wizedroid/torrent-bot.svg.svg?style=flat-square
+[forks-shield]: https://img.shields.io/github/forks/wizedroid/torrent-bot.svg?style=plastic
+[forks-url]: https://github.com/wizedroid/torrent-bot/network/members
+[stars-shield]: https://img.shields.io/github/stars/wizedroid/torrent-bot.svg?style=plastic
+[stars-url]: https://github.com/wizedroid/torrent-bot/stargazers
+[issues-shield]: https://img.shields.io/github/issues/wizedroid/torrent-bot.svg?style=plastic
+[issues-url]: https://github.com/wizedroid/torrent-bot/issues
+[license-shield]: https://img.shields.io/github/license/wizedroid/torrent-bot.svg?style=plastic
+[license-url]: https://github.com/wizedroid/torrent-bot/blob/master/LICENSE.txt
 [product-screenshot]: images/home_page.png
