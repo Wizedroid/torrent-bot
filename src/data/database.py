@@ -54,7 +54,7 @@ class TBDatabase:
             "max_size_mb" INTEGER NOT NULL,
             "resolution_profile"	TEXT NOT NULL,
             "state" TEXT NOT NULL DEFAULT '{self.states.SEARCHING}',
-            "imdbid"	INTEGER NOT NULL,
+            "imdbid"	INTEGER UNIQUE NOT NULL,
             "cover_url" TEXT,
             "hash" TEXT)
         """
@@ -66,7 +66,7 @@ class TBDatabase:
             "name" TEXT UNIQUE NOT NULL,
             "max_episode_size_mb" INTEGER NOT NULL,
             "resolution_profile"	TEXT NOT NULL,
-            "imdbid"	INTEGER NOT NULL,
+            "imdbid"	INTEGER UNIQUE NOT NULL,
             "state" TEXT NOT NULL DEFAULT '{self.states.SEARCHING}',
             "cover_url" TEXT
         )
