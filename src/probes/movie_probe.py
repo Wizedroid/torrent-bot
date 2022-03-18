@@ -41,10 +41,10 @@ class MovieProbe(Probe):
 
     @staticmethod
     def new(config: config):
-        """Create a new movies probe directly from the config
+        """Create a new movies probe directly from the resources
 
         Args:
-            config (config): the configuration parameters for the application
+            config (resources): the configuration parameters for the application
 
         Returns:
             MovieProbe: The movie probe

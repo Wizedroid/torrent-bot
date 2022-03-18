@@ -67,10 +67,10 @@ class Visuals:
 
     @staticmethod
     def new(config: config):
-        """Create a new Visuals object directly from the config
+        """Create a new Visuals object directly from the resources
 
         Args:
-            config (config): the configuration parameters for the application
+            config (resources): the configuration parameters for the application
 
         Returns:
             Visuals: The visuals object

@@ -43,10 +43,10 @@ class TVShowProbe(Probe):
 
     @staticmethod
     def new(config: config):
-        """Create a new tv show probe directly from the config
+        """Create a new tv show probe directly from the resources
 
         Args:
-            config (config): the configuration parameters for the application
+            config (resources): the configuration parameters for the application
 
         Returns:
             TvShowProbe: The tv show probe
