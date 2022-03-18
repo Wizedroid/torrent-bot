@@ -105,56 +105,34 @@ no proper input validation on some instances and no authentication for the time 
 
 #### Manual setup from source
 
-1. Create a folder named .tbot in your home directory
-```commandline
-mkdir $HOME/.tbot
-```
-2. Create a file named `config.yaml` in `$HOME/.tbot` with the following content and change the parameters
-as needed.
-
-```yaml
-jackett:
-  api_key: <replace_with_jacket_api_key>
-  api_url: http://127.0.0.1:9117/api/v2.0
-
-qbittorrent:
-  hostname: 127.0.0.1
-  port: 8080
-
-movies:
-  directory: <replace_with_the_path_were_movies_will_be_stored>
-  retention_period_days: 30
-
-shows:
-  directory: <replace_with_the_path_were_shows_will_be_stored>
-  retention_period_days: 30
-```
-
-3. Clone the repository
+1. Clone the repository
 
 ```commandline
 git clone https://github.com/wizedroid/torrent-bot
 ```
 
-4. Install the python requirements (use a venv if needed)
+2. Install the python requirements (use a venv if needed)
 
 ```commandline
 pip install -r torrent-bot/requirements.txt
 ```
 
-5. Start the application
+4. Start the application and input your jackett api key and the desired movies and tv shows directories.
 
 ```commandline
 cd torrent-bot/src
 python tbot.py
 ```
 
-This need to be manually configured to run as a service. 
+Torrent bot needs to be manually configured to run as a service. 
 No current support.
+
+To change the configurations, go to `$home/.tbot/config.yaml`
 
 #### Windows Installer
 
-TBD
+Download the latest version of the Windows installer, "tbot.installer.windows.exe" from the releases page and
+install.
 
 #### Linux Installer
 
