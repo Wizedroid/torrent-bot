@@ -16,8 +16,11 @@ def main():
     Main function for torrent bot.
     Used to load the initial configuration, create the database and start the torrent bot.
     """
+    config.create_config()
+    logging.info(config.ASCII_ART)
+
     logging.info("Loading configurations")
-    config.load_config(config.CONFIG_PATH)
+    config.load_config()
 
     logging.info("Initializing data")
     db = TBDatabase(config.DB_PATH)
