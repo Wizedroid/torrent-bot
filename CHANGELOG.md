@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Changed the README file to include the new installation methods.
+- Changed the README file to remove unused sections from the content table and updated some references
+
 ## [0.0.1-alpha] - 2022-03-18
 
 - Creation of a bot that automatically searches movies and tv series using entries previously added to a database

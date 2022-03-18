@@ -22,10 +22,10 @@ README based on https://github.com/othneildrew/Best-README-Template
   <p align="center">
     An application for searching movies & shows and automatically download them
     <br />
-    <a href="https://github.com/wizedroid/torrent-bot"><strong>Explore the docs »</strong></a>
+    <a href="#usage"><strong>Explore the docs »</strong></a>
     <br />
     <br />
-    <a href="https://github.com/wizedroid/torrent-bot">View Demo</a>
+    <a href="https://github.com/Wizedroid/torrent-bot/releases">Releases</a>
     ·
     <a href="https://github.com/wizedroid/torrent-bot/issues">Report Bug</a>
     ·
@@ -41,14 +41,11 @@ README based on https://github.com/othneildrew/Best-README-Template
   <ol>
     <li>
       <a href="#about-the-project">About The Project</a>
-      <ul>
-        <li><a href="#built-with">Built With</a></li>
-      </ul>
     </li>
     <li>
       <a href="#getting-started">Getting Started</a>
       <ul>
-        <li><a href="#prerequisites">Prerequisites</a></li>
+        <li><a href="#pre-requisites">Pre-requisites</a></li>
         <li><a href="#installation">Installation</a></li>
       </ul>
     </li>
@@ -57,7 +54,6 @@ README based on https://github.com/othneildrew/Best-README-Template
     <li><a href="#contributing">Contributing</a></li>
     <li><a href="#license">License</a></li>
     <li><a href="#contact">Contact</a></li>
-    <li><a href="#acknowledgments">Acknowledgments</a></li>
   </ol>
 </details>
 
