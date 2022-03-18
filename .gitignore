@@ -153,3 +153,8 @@ cython_debug/
 
 #MAC
 *.DS_Store
+
+#BUILD Artifacts
+tbot.spec
+dist
+build
