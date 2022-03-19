@@ -1,0 +1,5 @@
+In order to use torrent-bot you first need to install:
+
+python
+jackett
+qbittorrent
