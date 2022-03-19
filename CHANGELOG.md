@@ -6,8 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+
+## [0.0.2-alpha] - 2022-03-19
+
 - Changed the README file to include the new installation methods.
 - Changed the README file to remove unused sections from the content table and updated some references
+- Changed template folder for when running as executable (Fixes Executable for 0.0.1-alpha)
 
 ## [0.0.1-alpha] - 2022-03-18
 
