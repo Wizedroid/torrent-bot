@@ -1,5 +1,7 @@
 import threading
 import logging
+import os
+import sys
 from sqlite3.dbapi2 import Error
 from flask import Flask, render_template, request, redirect, url_for, flash
 from flask import current_app, g
@@ -27,7 +29,11 @@ class Visuals:
 
     def __init__(self, database_path: str, secret_key: str,
                  resolution_profiles: set, hostname: str, port: int):
-        self.app = Flask(__name__)
+        if getattr(sys, 'frozen', False):
+            template_folder = os.path.join(sys._MEIPASS, 'templates')
+            self.app = Flask(__name__, template_folder=template_folder)
+        else:
+            self.app = Flask(__name__)
         self.app.secret_key = secret_key
         self.app.config["DB"] = database_path
         self.app.teardown_appcontext(self.close_db)
