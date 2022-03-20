@@ -1,4 +1,5 @@
 import imdb
+from functools import lru_cache
 
 
 class IMDBFinder:
@@ -60,6 +61,7 @@ class IMDBFinder:
         """
         self.finder.update(series, 'episodes')
 
+    @lru_cache(maxsize=1000)
     def fetch_show(self, imdbid: str) -> object:
         """Fetches a show given by the specified imdb id
 
