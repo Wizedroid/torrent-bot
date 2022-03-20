@@ -1,14 +1,22 @@
 import logging
 import time
 import signal
+import sys
 from utils import config
 from data import TBDatabase
 from probes import MovieProbe
 from visuals import Visuals
 from probes import TVShowProbe
+import logging.handlers as handlers
 
+file_handler = handlers.RotatingFileHandler(f"{config.ROOT_PATH}/tbot.log", maxBytes=1048576, backupCount=5)
+stdout_handler = logging.StreamHandler(sys.stdout)
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(
+    level=logging.INFO,
+    format='[%(asctime)s] {%(filename)s:%(lineno)d} %(levelname)s - %(message)s',
+    handlers=[file_handler, stdout_handler]
+)
 
 
 def main():
