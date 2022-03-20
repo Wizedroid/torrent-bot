@@ -172,9 +172,13 @@ class TVShowProbe(Probe):
                 return False
 
         last_episode_number = len(episodes)
-        last_episode_date = datetime.strptime(
-            episodes[last_episode_number - 1]['air_date'].replace('.', ''), "%d %b %Y")
-        return (datetime.now() - last_episode_date).days > 0
+
+        try:
+            last_episode_date = self.parse_date(episodes[last_episode_number - 1]['air_date'].replace('.', ''))
+            return (datetime.now() - last_episode_date).days > 0
+        except ValueError as e:
+            logging.error(e)
+            return False
 
     def download(self, name: str,
                  season: int,
@@ -306,3 +310,12 @@ class TVShowProbe(Probe):
             [int]: the value in byes
         """
         return value * 1024 * 1024
+
+    @staticmethod
+    def parse_date(date_text: str):
+        for fmt in ("%d %b %Y", '%Y', '%d/%m/%Y', '%Y-%m-%d',  '%d%m%Y'):
+            try:
+                return datetime.strptime(date_text, fmt)
+            except ValueError:
+                pass
+        raise ValueError(f'Failed to parse date {date_text}')

@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 - Added RotatingFileHandler and StreamHandler to log both to a file and stdout
-- 
+- Added new function to tv show probe to parse datetime with support for known imdb formats
 
 ## [0.0.2-alpha] - 2022-03-19
 
