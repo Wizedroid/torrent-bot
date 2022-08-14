@@ -24,14 +24,14 @@ AppUpdatesURL={#MyAppURL}
 DefaultDirName={autopf}\{#MyAppName}
 ChangesAssociations=yes
 DisableProgramGroupPage=yes
-LicenseFile=C:\Users\Pedro\python\torrent-bot\LICENSE.txt
-InfoBeforeFile=C:\Users\Pedro\python\torrent-bot\dist\INFO.txt
+LicenseFile=%userprofile%LICENSE.txt
+InfoBeforeFile=%userprofile%\dist\INFO.txt
 ; Uncomment the following line to run in non administrative install mode (install for current user only.)
 ;PrivilegesRequired=lowest
 PrivilegesRequiredOverridesAllowed=dialog
-OutputDir=C:\Users\Pedro\python\torrent-bot\dist
+OutputDir=%userprofile%\dist
 OutputBaseFilename=tbot.installer.windows
-SetupIconFile=C:\Users\Pedro\python\torrent-bot\dist\tbot.ico
+SetupIconFile=%userprofile%\dist\tbot.ico
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern
@@ -43,7 +43,7 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "C:\Users\Pedro\python\torrent-bot\dist\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
+Source: "%userprofile%\dist\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Registry]
